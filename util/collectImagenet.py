@@ -1,4 +1,6 @@
-#
+#!/usr/bin/env python2.7
+# -*- coding: utf-8 -*-
+
 import sys,os
 from urllib import urlopen
 from urllib import urlretrieve
@@ -34,7 +36,12 @@ for line in open('words.txt', 'r'):
     dict[index]=first_label
     c += 1
 assert (c == len(dict)), ""
+print(dict["n07750586"])
+#with open("./dict.txt", "w") as fin:
+#    for (k, v) in dict.items():
+#        fin.write("{k} {v}\n".format(k=k, v=v))
 
+sys.exit()
 ids = open('imagenet.synset.obtain_synset_list', 'r').read()
 ids = ids.split()
 random.shuffle(ids)
