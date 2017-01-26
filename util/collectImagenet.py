@@ -20,7 +20,7 @@ def cmd(cmd):
 
 # arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--data_dir',        type=str,   default='images')
+parser.add_argument('--data_dir',        type=str,   default='/Users/kumada/Data/image_net/images')
 parser.add_argument('--num_of_classes',  type=int,   default=1000)
 parser.add_argument('--num_of_pics',   type=int,   default=10)
 
@@ -36,18 +36,18 @@ for line in open('words.txt', 'r'):
     dict[index]=first_label
     c += 1
 assert (c == len(dict)), ""
-print(dict["n07750586"])
 #with open("./dict.txt", "w") as fin:
 #    for (k, v) in dict.items():
 #        fin.write("{k} {v}\n".format(k=k, v=v))
 
-sys.exit()
+
 ids = open('imagenet.synset.obtain_synset_list', 'r').read()
 ids = ids.split()
 random.shuffle(ids)
 
 start = time.time()
 cmd("mkdir %s"%args.data_dir)
+print("args.num_of_classes", args.num_of_classes)
 for i in range(args.num_of_classes):
     id = ids[i].rstrip()
     category = dict[id]
