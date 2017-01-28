@@ -30,7 +30,7 @@ stack level too deep (SystemStackError)
 ```
 [ここ](http://medialab.di.unipi.it/wiki/Wikipedia_Extractor)にあるWikiExtractor.pyを使う。
 ```
-$> ./WikiExtractor.py -cb 250K -o extracted enwiki-20101011-pages-articles.xml.bz2
+$> ./WikiExtractor.py --processes 3 -cb 10M -o extracted enwiki-20101011-pages-articles.xml.bz2
 ```
-ファンがフル回転する。7つのプロセスが起動する。
+3つのプロセスが起動する。--processesに指定するプロセス数のデフォルトは7、このまま実行するとファンがフル回転します。10M単位でテキストファイルに変換し、そのあと圧縮します。
 
