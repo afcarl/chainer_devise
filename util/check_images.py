@@ -3,10 +3,9 @@
 
 import os
 from PIL import Image
-import sys
 import shutil
 
-DIR_PATH = "/Users/kumada/Data/image_net/images"
+DIR_PATH = "/Users/kumada/Data/image_net/images-278-100"
 
 
 def check_dir(dir_path, is_verbose=True):
@@ -14,10 +13,10 @@ def check_dir(dir_path, is_verbose=True):
     for f in os.listdir(dir_path):
         fp = os.path.join(dir_path, f)
         try:
-            image = Image.open(fp)
+            Image.open(fp)
             c += 1
-        except IOError, e:
-            if is_verbose:   
+        except IOError:
+            if is_verbose:
                 print(" {} is not image".format(os.path.basename(fp)))
             else:
                 pass
@@ -29,10 +28,41 @@ def find_invalid_files(dir_path):
     for f in os.listdir(dir_path):
         fp = os.path.join(dir_path, f)
         try:
-            image = Image.open(fp)
-        except IOError, e:
+            Image.open(fp)
+        except IOError:
             invalid_files.append(fp)
     return invalid_files
+
+
+def convert_to_rgb_images_in_each_directory(dir_path):
+    invalid_files = []
+    for f in os.listdir(dir_path):
+        fp = os.path.join(dir_path, f)
+        try:
+            image = Image.open(fp)  # exception may occur
+            if image.mode != "RGB":
+                image = image.convert("RGB")  # exception may occur
+                a, _ = os.path.splitext(fp)
+                new_fp = a + ".jpg"
+                print("file {} is not RGB -> {}".format(fp, new_fp))
+                image.save(new_fp)
+                os.remove(fp)
+        except IOError:
+            invalid_files.append(fp)
+    return invalid_files
+
+
+def convert_to_rgb(dir_path):
+    for d in os.listdir(dir_path):
+        fd = os.path.join(dir_path, d)
+        a, b = os.path.splitext(fd)
+        if not os.path.isdir(fd):
+            continue
+        invalid_files = convert_to_rgb_images_in_each_directory(fd)
+        if len(invalid_files) != 0:
+            for f in invalid_files:
+                print("This image either cannot be loaded or cannot be converted to RGB:{} -> remove it".format(f))
+                os.remove(f)
 
 
 # 1. watch contents of directories.
@@ -67,16 +97,20 @@ def see_directories(dir_path):
         c = check_dir(fd, is_verbose=False)
         print("{i} {d} {c}".format(i=i, d=d, c=c))
 
-   
+
 # 4. remove invalid files
 def remove_invalid_files(dir_path):
     for (i, d) in enumerate(os.listdir(dir_path)):
         fd = os.path.join(dir_path, d)
+        if not os.path.isdir(fd):
+            continue
         invalid_files = find_invalid_files(fd)
         for invalid_file in invalid_files:
+            print("remove {}".format(invalid_file))
             os.remove(invalid_file)
 
 
+# select directories each of which includes files >= lower_size.
 def select_directories(dir_path, lower_size):
     list_path = os.path.join(dir_path, "list")
     for line in open(list_path):
@@ -85,7 +119,7 @@ def select_directories(dir_path, lower_size):
         if lower_size <= size:
             print(items[1])
 
-        
+
 def make_histogram(dir_path, lower_size):
     list_path = os.path.join(dir_path, "list")
     sizes = []
@@ -106,6 +140,6 @@ def make_histogram(dir_path, lower_size):
     for v in histogram:
         print(v)
 
-if __name__ == "__main__":
-    make_histogram(DIR_PATH, 0)
 
+if __name__ == "__main__":
+    convert_to_rgb("./bar")
