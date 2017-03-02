@@ -12,9 +12,17 @@ LABEL_PATTERNS = {
     "trainval": re.compile(r"(\w+)_trainval"),
 }
 
-DATA_DIR = "/Users/kumada/Data/VOC2012/ImageSets/Main"
-LABEL_DICT_PATH = "./label_dictionary.txt"
-DATASET_PATH = "./dataset.txt"
+# DATA_DIR = "/Users/kumada/Data/VOC2012/ImageSets/Main"
+# LABEL_DICT_PATH = "./label_dictionary.txt"
+# DATASET_PATH = "./dataset.txt"
+
+# IMAGE_DIR_PATH = "/home/ubuntu/data/voc2012/JPEGImages"
+# DATASET_PATH = "/home/ubuntu/data/voc2012/dataset.txt"
+# LABEL_DICT_PATH = "/home/ubuntu/data/voc2012/label_dictionary.txt"
+FULL_PATH_DATASET_PATH = "/home/ubuntu/data/voc2012/full_path_dataset.txt"
+TRAINING_DATASET_PATH = "/home/ubuntu/data/voc2012/training.txt"
+TESTING_DATASET_PATH = "/home/ubuntu/data/voc2012/testing.txt"
+RATE = 0.7
 
 
 def file_path_generator(path):
@@ -59,7 +67,38 @@ def make_dataset(path, kind, output_path):
             extract_file_path(fp, m.group(1), fout)
 
 
+def make_full_path_dataset(dataset_path, image_dir_path,
+                           full_path_dataset_path):
+    with open(dataset_path) as fin:
+        with open(full_path_dataset_path, "w") as fout:
+            for line in fin:
+                tokens = line.strip().split()
+                filename = tokens[0]
+                label = tokens[1]
+                full_path = os.path.join(image_dir_path, filename + ".jpg")
+                assert os.path.exists(full_path), ""
+                fout.write("{p} {l}\n".format(p=full_path, l=label))
+
+
+def split_dataset(full_path_dataset_path, rate):
+    paths = collections.defaultdict(list)
+    with open(full_path_dataset_path) as fin:
+        for line in fin:
+            tokens = line.strip().split()
+            label = tokens[1]
+            path = tokens[0]
+            paths[label].append(path)
+
+    for (key, value) in paths.items():
+        print(key, len(value))
+
+
 if __name__ == "__main__":
 
-    make_labels(DATA_DIR, LABEL_DICT_PATH)
-    make_dataset(DATA_DIR, "trainval", DATASET_PATH)
+    # make_labels(DATA_DIR, LABEL_DICT_PATH)
+    # make_dataset(DATA_DIR, "trainval", DATASET_PATH)
+
+    # make_full_path_dataset(DATASET_PATH, IMAGE_DIR_PATH,
+    #                        FULL_PATH_DATASET_PATH)
+
+    split_dataset(FULL_PATH_DATASET_PATH, RATE)
