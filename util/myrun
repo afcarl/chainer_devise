@@ -1,0 +1,6 @@
+#!/bin/sh
+
+./collectImagenet_selected.py \
+        --num_of_classes 1 \
+        --num_of_pics 50 \
+        --data_dir /Users/kumada/Data/image_net/images2
