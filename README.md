@@ -9,6 +9,9 @@ util/myrunを使って、500クラス、各クラス1000枚として収集。必
 残念ながら、これ以上画像を増やすことができません。
 `collectImagenet_selected.py`で試しましたが、だめでした。
 
+# caffe modelの変換
+`visual/load_caffemodel.py`を使って、caffemodelをchainerのモデルに変換する。
+
 # enwikiの加工
 ## ruby関係のインストール。
 ```
