@@ -5,8 +5,6 @@ import os
 from PIL import Image
 import shutil
 
-DIR_PATH = "/Users/kumada/Data/image_net/images-278-100"
-
 
 def check_dir(dir_path, is_verbose=True):
     c = 0
@@ -47,6 +45,8 @@ def convert_to_rgb_images_in_each_directory(dir_path):
                 print("file {} is not RGB -> {}".format(fp, new_fp))
                 image.save(new_fp)
                 os.remove(fp)
+            else:
+                pass  # print("file {} is RGB".format(fp))
         except IOError:
             invalid_files.append(fp)
     return invalid_files
@@ -142,4 +142,4 @@ def make_histogram(dir_path, lower_size):
 
 
 if __name__ == "__main__":
-    convert_to_rgb("./bar")
+    check_images("/Volumes/TOSHIBA EXT/mac/image_net/selected_images_256")

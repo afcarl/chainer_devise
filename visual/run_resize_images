@@ -1,0 +1,6 @@
+#!/bin/sh
+
+./resize_images.py \
+        --src_dir /Volumes/TOSHIBA\ EXT/mac/image_net/selected_images \
+        --dst_dir /Volumes/TOSHIBA\ EXT/mac/image_net/selected_images_256 \
+        --size 256

@@ -9,6 +9,19 @@ util/myrunを使って、500クラス、各クラス1000枚として収集。必
 残念ながら、これ以上画像を増やすことができません。
 `collectImagenet_selected.py`で試しましたが、だめでした。
 
+# 画像ファイルか否か
+画像ファイルか否かを`check_images.py`で確認する。画像でなければ削除、RGBでなければRGBに変換する。
+
+# 画像のリサイズ
+`resize_images.py`を使って、画像サイズを変更する。
+`run_resize_images`を使えば良い。
+
+# 画像の反転
+`increase_images.py`を使って、画像を反転する。100枚以下のディレクトリに適用する。
+
+# 画像リストの作成
+ここから。詳細はchainer_lsp15/data_production/readme.txtを参照。
+
 # caffe modelの変換
 `visual/load_caffemodel.py`を使って、caffemodelをchainerのモデルに変換する。
 

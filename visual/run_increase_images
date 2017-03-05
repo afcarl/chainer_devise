@@ -1,0 +1,5 @@
+#!/bin/sh
+
+./increase_images.py \
+    --src_dir /Volumes/TOSHIBA\ EXT/mac/image_net/selected_images_256 \
+    --upper_num 100
