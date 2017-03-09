@@ -1,0 +1,5 @@
+#!/bin/sh
+
+./create_list.py \
+        --src_dir /Volumes/TOSHIBA\ EXT/mac/image_net/selected_images_256 \
+        --label_path /Volumes/TOSHIBA\ EXT/mac/image_net/selected_images_256/label.txt

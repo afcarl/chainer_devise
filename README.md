@@ -10,7 +10,8 @@ util/myrunを使って、500クラス、各クラス1000枚として収集。必
 `collectImagenet_selected.py`で試しましたが、だめでした。
 
 # 画像ファイルか否か
-画像ファイルか否かを`check_images.py`で確認する。画像でなければ削除、RGBでなければRGBに変換する。
+画像ファイルか否かを`check_images.py`で確認する。画像でなければ削除、RGBでなければRGBに変換しjpg拡張子で保存する。
+正常な画像なら拡張子はそのまま。
 
 # 画像のリサイズ
 `resize_images.py`を使って、画像サイズを変更する。
@@ -20,7 +21,14 @@ util/myrunを使って、500クラス、各クラス1000枚として収集。必
 `increase_images.py`を使って、画像を反転する。100枚以下のディレクトリに適用する。
 
 # 画像リストの作成
-ここから。詳細はchainer_lsp15/data_production/readme.txtを参照。
+`create_list.py`を使って、画像名とラベルの対応付けを行う。
+`run_create_list`を使えば良い。
+各ディレクトリの中にlist.txtが出力される。
+
+# 訓練・検証・テストデータの作成
+`create_dataset.py`を使って、画像名とラベルの対応付けを行う。
+`run_create_dataset`を使えば良い。
+各ディレクトリの中にdataset_list.txtが出力される。
 
 # caffe modelの変換
 `visual/load_caffemodel.py`を使って、caffemodelをchainerのモデルに変換する。
