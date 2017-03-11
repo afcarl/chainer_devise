@@ -2,6 +2,6 @@
 
 ./create_dataset.py \
         --src_dir /Volumes/TOSHIBA\ EXT/mac/image_net/selected_images_256 \
-        --training 5 \
-        --testing 1 \
-        --validation 1
+        --training 6 \
+        --testing 3 \
+        --validation 1 
