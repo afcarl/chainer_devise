@@ -29,6 +29,8 @@ util/myrunを使って、500クラス、各クラス1000枚として収集。必
 `create_dataset.py`を使って、画像名とラベルの対応付けを行う。
 `run_create_dataset`を使えば良い。
 各ディレクトリの中にdataset_list.txtが出力される。
+train : test : valid = 6 : 3 : 1とした。
+実際の訓練時には、train + valid : test = 7 : 3とする。
 
 # caffe modelの変換
 `visual/load_caffemodel.py`を使って、caffemodelをchainerのモデルに変換する。
