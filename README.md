@@ -39,6 +39,9 @@ train : test : valid = 6 : 3 : 1とした。
 # test.txtとtrain_valid.txtの作成
 total_list.txtにgrepを適用して、test.txtとtrain_valid.txtを作る。
 
+# data_loader.pyの変更
+一気読みを止める。
+
 # caffe modelの変換
 `visual/load_caffemodel.py`を使って、caffemodelをchainerのモデルに変換する。
 
