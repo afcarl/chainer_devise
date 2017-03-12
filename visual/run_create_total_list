@@ -1,0 +1,4 @@
+#!/bin/sh
+
+./create_total_list.py \
+        --src_dir /Volumes/TOSHIBA\ EXT/mac/image_net/selected_images_256 

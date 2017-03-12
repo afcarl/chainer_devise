@@ -32,6 +32,13 @@ util/myrunを使って、500クラス、各クラス1000枚として収集。必
 train : test : valid = 6 : 3 : 1とした。
 実際の訓練時には、train + valid : test = 7 : 3とする。
 
+# dataset_list.txtの作成
+`create_total_list.py`を使い`dataset_list.txt`を1つにまとめる。total_list.txtが出来上がる。
+`run_create_total_list`を使う。
+
+# test.txtとtrain_valid.txtの作成
+total_list.txtにgrepを適用して、test.txtとtrain_valid.txtを作る。
+
 # caffe modelの変換
 `visual/load_caffemodel.py`を使って、caffemodelをchainerのモデルに変換する。
 
