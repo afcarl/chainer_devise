@@ -39,6 +39,16 @@ train : test : valid = 6 : 3 : 1とした。
 # test.txtとtrain_valid.txtの作成
 total_list.txtにgrepを適用して、test.txtとtrain_valid.txtを作る。
 
+# 画像のくり抜きと平均画像からの差分
+- 256x256の画像の中心部分を227x227のサイズにくり抜く。
+- 差分画像もくり抜き、差分を取る。
+- 結果を保存する。
+以上の作業をdata_preprocessor.pyで行う。
+image_cropperで落ちてます。
+
+# Iteratorの実装
+- batch size分の画像とラベルを返す。
+
 # caffe modelの変換
 `visual/load_caffemodel.py`を使って、caffemodelをchainerのモデルに変換する。
 
