@@ -2,30 +2,47 @@
 # coding:utf-8
 from image_cropper import *  # noqa
 import unittest
-# import subprocess
+import numpy as np
+import os
+import shutil
 
-SAMPLE_IMAGE_PATH = "../unittest_files/image_cropper/11_Pleospora048DFs.png"
-SAVING_PATH = "../unittest_files/image_cropper/ans_11_Pleospora048DFs.png"
+TEST_IMAGE_DIR_PATH = "../unittest_files"
+TEST_IMAGE_PATH = os.path.join(TEST_IMAGE_DIR_PATH, "test.png")
 INSIZE = 227
 EPSILON = 1.0e-8
 
 
 class ImageCropperTest(unittest.TestCase):
 
+    def __init__(self, *args, **kwargs):
+        super(ImageCropperTest, self).__init__(*args, **kwargs)
+        self.image = ImageCropperTest.make_test_image()
+        if not os.path.isdir(TEST_IMAGE_DIR_PATH):
+            os.mkdir(TEST_IMAGE_DIR_PATH)
+        cv2.imwrite(TEST_IMAGE_PATH, self.image)
+
+    @staticmethod
+    def make_test_image():
+        image = np.zeros((256, 256, 3))
+        image[14:241, 14:241, :] = 2
+        return image
+
     def test_crop_center(self):
         cropper = ImageCropper(INSIZE)
-        center_image = cropper.crop_center(SAMPLE_IMAGE_PATH, is_scaled=False)
-        self.assertTrue(center_image.shape == (3, INSIZE, INSIZE))
-        answer = cv2.imread(SAVING_PATH).transpose(2, 0, 1).astype(np.float32)
-        self.assertTrue(np.all(answer == center_image))
+        cropped_image = cropper.crop_center(TEST_IMAGE_PATH, is_scaled=False)
+        self.assertTrue(cropped_image.shape == (3, INSIZE, INSIZE))
+        self.assertTrue(np.all(cropped_image == 2))
 
     def test_crop_center_image(self):
-        image = cv2.imread(SAMPLE_IMAGE_PATH).transpose(2, 0, 1)
+        image = self.image.transpose(2, 0, 1)
         cropper = ImageCropper(INSIZE)
-        image = cropper.crop_center_image(image, is_scaled=False)
-        self.assertTrue((3, INSIZE, INSIZE) == image.shape)
-        answer = cv2.imread(SAVING_PATH).transpose(2, 0, 1).astype(np.float32)
-        self.assertTrue(np.all(answer == image))
+        cropped_image = cropper.crop_center_image(image, is_scaled=False)
+        self.assertTrue((3, INSIZE, INSIZE) == cropped_image.shape)
+        self.assertTrue(np.all(cropped_image == 2))
+
+    def tearDown(self):
+        if os.path.isdir(TEST_IMAGE_DIR_PATH):
+            shutil.rmtree(TEST_IMAGE_DIR_PATH)
 
 
 if __name__ == "__main__":

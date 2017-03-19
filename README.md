@@ -44,7 +44,7 @@ total_list.txtにgrepを適用して、test.txtとtrain_valid.txtを作る。
 - 差分画像もくり抜き、差分を取る。
 - 結果を保存する。
 以上の作業をdata_preprocessor.pyで行う。
-image_cropperで落ちてます。
+画像をユニットテストで使うことをやめる。
 
 # Iteratorの実装
 - batch size分の画像とラベルを返す。
