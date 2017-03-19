@@ -1,0 +1,6 @@
+#!/bin/sh
+
+./preprocess_data.py \
+    --mean_image_path /Users/kumada/Data/image_net/ilsvrc_2012_mean.npy \
+    --input_dir_path /Users/kumada/Data/image_net/selected_images_256 \
+    --output_dir_path /Users/kumada/Data/image_net/selected_images_256
