@@ -5,8 +5,8 @@
 # from chainer import Variable
 from modified_reference_caffenet import *  # noqa
 from copy_model import *  # noqa
-import cPickle as pickle
-# import os
+import cPickle
+import os
 from data_loader import *  # noqa
 # import sys
 import argparse
@@ -45,6 +45,11 @@ import argparse
 #     sys.stdout.flush()
 
 
+def check_path(path):
+    if not os.path.exists(initial_model_path):
+        raise IOError("{} is not found".format(path))
+
+
 if __name__ == "__main__":
     try:
         parser = argparse.ArgumentParser()
@@ -52,45 +57,52 @@ if __name__ == "__main__":
         parser.add_argument("--training_data_path", help="input: set a path to a training data file(.txt)")
         parser.add_argument("--testing_data_path", help="input: set a path to a testing data file(.txt)")
         parser.add_argument("--mean_image_path", help="input: set a path to a mean image file(.npy)")
+        parser.add_argument("--gpu", type=int, default=-1, help="input: GPU ID(negative value indicates CPU")
 
         args = parser.parse_args()
         initial_model_path = args.initial_model_path
         training_data_path = args.training_data_path
         testing_data_path = args.testing_data_path
         mean_image_path = args.mean_image_path
+        gpu = args.gpu
 
-        print("# _/_/_/ load dataset _/_/_/")
-
-        data_loader = DataLoader()
-        x_train, y_train = data_loader.load_with_subtraction_of_mean(
-            training_data_path,
-            mean_image_path,
-            ModifiedReferenceCaffeNet.IN_SIZE
-        )
-
-        x_test, y_test = data_loader.load_with_subtraction_of_mean(
-            testing_data_path,
-            mean_image_path,
-            ModifiedReferenceCaffeNet.IN_SIZE
-        )
-
-        print("train x.shape: {s}, x.dtype: {d}".format(s=x_train.shape, d=x_train.dtype))
-        print("train y.shape: {s}, y.dtype: {d}".format(s=y_train.shape, d=y_train.dtype))
-
-        print("test x.shape: {s}, x.dtype: {d}".format(s=x_test.shape, d=x_test.dtype))
-        print("test y.shape: {s}, y.dtype: {d}".format(s=y_test.shape, d=y_test.dtype))
-        sys.stdout.flush()
+        check_path(initial_model_path)
+        check_path(training_data_path)
+        check_path(testing_data_path)
+        check_path(mean_image_path)
 
         print("# _/_/_/ load model _/_/_/")
 
         # load an original Caffe model
-        original_model = pickle.load(open(initial_model_path))
+        original_model = cPickle.load(open(initial_model_path))
 
-        # load a new model to be fine-tuned
-        modified_model = ModifiedReferenceCaffeNet()
+        # # load a new model to be fine-tuned
+        # modified_model = ModifiedReferenceCaffeNet()
 
-        # copy W/b from the original model to the new one
-        copy_model(original_model, modified_model)
+        # # copy W/b from the original model to the new one
+        # copy_model(original_model, modified_model)
+
+        # print("# _/_/_/ load dataset _/_/_/")
+
+        # data_loader = DataLoader()
+        # x_train, y_train = data_loader.load_with_subtraction_of_mean(
+        #     training_data_path,
+        #     mean_image_path,
+        #     ModifiedReferenceCaffeNet.IN_SIZE
+        # )
+
+        # x_test, y_test = data_loader.load_with_subtraction_of_mean(
+        #     testing_data_path,
+        #     mean_image_path,
+        #     ModifiedReferenceCaffeNet.IN_SIZE
+        # )
+
+        # print("train x.shape: {s}, x.dtype: {d}".format(s=x_train.shape, d=x_train.dtype))
+        # print("train y.shape: {s}, y.dtype: {d}".format(s=y_train.shape, d=y_train.dtype))
+
+        # print("test x.shape: {s}, x.dtype: {d}".format(s=x_test.shape, d=x_test.dtype))
+        # print("test y.shape: {s}, y.dtype: {d}".format(s=y_test.shape, d=y_test.dtype))
+        # sys.stdout.flush()
 
         # _/_/_/ setup _/_/_/
 
