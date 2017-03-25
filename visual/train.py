@@ -5,12 +5,12 @@
 # from chainer import Variable
 from modified_reference_caffenet import *  # noqa
 from copy_model import *  # noqa
-import cPickle
+# import cPickle
 import os
 from data_loader import *  # noqa
 # import sys
 import argparse
-
+from data_preprocessor import DataPreprocessor
 # _/_/_/ paths _/_/_/
 # PICKLE_PATH = "/home/ubuntu/data/models/chainer/bvlc_reference_caffenet/bvlc_reference_caffenet-2017-01-08.pkl"
 # PICKLE_DUMP_PATH = "/home/ubuntu/results/devise/trainded_visual_model.pkl"
@@ -54,27 +54,36 @@ if __name__ == "__main__":
     try:
         parser = argparse.ArgumentParser()
         parser.add_argument("--initial_model_path", help="input: set a path to an initial trained model file(.pkl)")
+        parser.add_argument("--root_dir_path", help="input: set a path to an training/testing directory")
         parser.add_argument("--training_data_path", help="input: set a path to a training data file(.txt)")
         parser.add_argument("--testing_data_path", help="input: set a path to a testing data file(.txt)")
         parser.add_argument("--mean_image_path", help="input: set a path to a mean image file(.npy)")
         parser.add_argument("--gpu", type=int, default=-1, help="input: GPU ID(negative value indicates CPU")
+        parser.add_argument('--loader_job', type=int, default=2, help='input: number of parallel data loading processes')
+        parser.add_argument('--batch_size', type=int, default=32, help='input: learning minibatch size')
+        parser.add_argument('--test_batch_size', type=int, default=250, help='input: testing minibatch size')
 
         args = parser.parse_args()
         initial_model_path = args.initial_model_path
+        root_dir_path = args.root_dir_path
         training_data_path = args.training_data_path
         testing_data_path = args.testing_data_path
         mean_image_path = args.mean_image_path
+        loader_job = args.loader_job
+        batch_size = args.batch_size
+        test_batch_size = args.test_batch_size
         gpu = args.gpu
 
         check_path(initial_model_path)
+        check_path(root_dir_path)
         check_path(training_data_path)
         check_path(testing_data_path)
         check_path(mean_image_path)
 
-        print("# _/_/_/ load model _/_/_/")
+        # print("# _/_/_/ load model _/_/_/")
 
         # load an original Caffe model
-        original_model = cPickle.load(open(initial_model_path))
+        # original_model = cPickle.load(open(initial_model_path))
 
         # # load a new model to be fine-tuned
         # modified_model = ModifiedReferenceCaffeNet()
@@ -82,27 +91,15 @@ if __name__ == "__main__":
         # # copy W/b from the original model to the new one
         # copy_model(original_model, modified_model)
 
-        # print("# _/_/_/ load dataset _/_/_/")
+        print("# _/_/_/ load dataset _/_/_/")
 
-        # data_loader = DataLoader()
-        # x_train, y_train = data_loader.load_with_subtraction_of_mean(
-        #     training_data_path,
-        #     mean_image_path,
-        #     ModifiedReferenceCaffeNet.IN_SIZE
-        # )
+        in_size = ModifiedReferenceCaffeNet.IN_SIZE
+        mean = np.load(mean_image_path)
+        train = DataPreprocessor(training_data_path, root_dir_path, mean, in_size, random=True, is_scaled=True)
+        test = DataPreprocessor(testing_data_path, root_dir_path, mean, in_size, random=False, is_scaled=True)
 
-        # x_test, y_test = data_loader.load_with_subtraction_of_mean(
-        #     testing_data_path,
-        #     mean_image_path,
-        #     ModifiedReferenceCaffeNet.IN_SIZE
-        # )
-
-        # print("train x.shape: {s}, x.dtype: {d}".format(s=x_train.shape, d=x_train.dtype))
-        # print("train y.shape: {s}, y.dtype: {d}".format(s=y_train.shape, d=y_train.dtype))
-
-        # print("test x.shape: {s}, x.dtype: {d}".format(s=x_test.shape, d=x_test.dtype))
-        # print("test y.shape: {s}, y.dtype: {d}".format(s=y_test.shape, d=y_test.dtype))
-        # sys.stdout.flush()
+        train_iter = chainer.iterators.MultiprocessIterator(train, batch_size, n_processes=loader_job)
+        test_iter = chainer.iterators.MultiprocessIterator(test, test_batch_size, repeat=False, n_processes=loader_job)
 
         # _/_/_/ setup _/_/_/
 
