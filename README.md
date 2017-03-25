@@ -49,8 +49,9 @@ total_list.txtにgrepを適用して、test.txtとtrain_valid.txtを作る。
 # Iteratorの実装
 - 256x256の画像の中心部分を227x227のサイズにくり抜く。
 - 差分画像もくり抜き、差分を取る。
-- 結果を保存する。
 - batch size分の画像とラベルを返す。
+chainer.dataset.DatasetMixinを使う。
+既存のdata_preprocessor.pyを書き換える。
 
 # caffe modelの変換
 `visual/load_caffemodel.py`を使って、caffemodelをchainerのモデルに変換する。
