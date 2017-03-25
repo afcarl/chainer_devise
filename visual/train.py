@@ -5,12 +5,14 @@
 # from chainer import Variable
 from modified_reference_caffenet import *  # noqa
 from copy_model import *  # noqa
-# import cPickle
+import cPickle
 import os
 from data_loader import *  # noqa
 # import sys
 import argparse
 from data_preprocessor import DataPreprocessor
+from chainer import training
+
 # _/_/_/ paths _/_/_/
 # PICKLE_PATH = "/home/ubuntu/data/models/chainer/bvlc_reference_caffenet/bvlc_reference_caffenet-2017-01-08.pkl"
 # PICKLE_DUMP_PATH = "/home/ubuntu/results/devise/trainded_visual_model.pkl"
@@ -62,34 +64,41 @@ if __name__ == "__main__":
         parser.add_argument('--loader_job', type=int, default=2, help='input: number of parallel data loading processes')
         parser.add_argument('--batch_size', type=int, default=32, help='input: learning minibatch size')
         parser.add_argument('--test_batch_size', type=int, default=250, help='input: testing minibatch size')
+        parser.add_argument('--epoch', type=int, default=10, help='input: number of epochs to train')
+        parser.add_argument('--out_dir_path', default='result', help='output: set a path to output directory')
 
         args = parser.parse_args()
+
+        # get paths
         initial_model_path = args.initial_model_path
         root_dir_path = args.root_dir_path
         training_data_path = args.training_data_path
         testing_data_path = args.testing_data_path
         mean_image_path = args.mean_image_path
-        loader_job = args.loader_job
-        batch_size = args.batch_size
-        test_batch_size = args.test_batch_size
-        gpu = args.gpu
+        out_dir_path = args.out_dir_path
 
+        # check paths
         check_path(initial_model_path)
         check_path(root_dir_path)
         check_path(training_data_path)
         check_path(testing_data_path)
         check_path(mean_image_path)
+        check_path(out_dir_path)
 
-        # print("# _/_/_/ load model _/_/_/")
+        print("# _/_/_/ load model _/_/_/")
 
         # load an original Caffe model
-        # original_model = cPickle.load(open(initial_model_path))
+        original_model = cPickle.load(open(initial_model_path))
 
-        # # load a new model to be fine-tuned
-        # modified_model = ModifiedReferenceCaffeNet()
+        # load a new model to be fine-tuned
+        modified_model = ModifiedReferenceCaffeNet()
 
-        # # copy W/b from the original model to the new one
-        # copy_model(original_model, modified_model)
+        # copy W/b from the original model to the new one
+        copy_model(original_model, modified_model)
+
+        if args.gpu >= 0:
+            chainer.cuda.get_device(args.gpu).use()  # make the GPU current
+            modified_model.to_gpu()
 
         print("# _/_/_/ load dataset _/_/_/")
 
@@ -98,49 +107,42 @@ if __name__ == "__main__":
         train = DataPreprocessor(training_data_path, root_dir_path, mean, in_size, random=True, is_scaled=True)
         test = DataPreprocessor(testing_data_path, root_dir_path, mean, in_size, random=False, is_scaled=True)
 
-        train_iter = chainer.iterators.MultiprocessIterator(train, batch_size, n_processes=loader_job)
-        test_iter = chainer.iterators.MultiprocessIterator(test, test_batch_size, repeat=False, n_processes=loader_job)
+        train_iter = chainer.iterators.MultiprocessIterator(train, args.batch_size, n_processes=args.loader_job)
+        test_iter = chainer.iterators.MultiprocessIterator(test, args.test_batch_size, repeat=False, n_processes=args.loader_job)
 
-        # _/_/_/ setup _/_/_/
+        print("# _/_/_/ set up an optimizer _/_/_/")
 
-        # model = modified_model.to_gpu()
-        # optimizer = chainer.optimizers.SGD(LEARNIN_RATE)
-        # optimizer.setup(model)
+        optimizer = chainer.optimizers.MomentumSGD(lr=0.01, momentum=0.9)
+        optimizer.setup(modified_model)
 
-        # # _/_/_/ training _/_/_/
+        print("# _/_/_/ set up a trainer _/_/_/")
 
-        # train_data_size = len(x_train)
+        updater = training.StandardUpdater(train_iter, optimizer, device=args.gpu)
+        trainer = training.Trainer(updater, (args.epoch, 'epoch'), args.out_dir_path)
 
-        # for epoch in range(1, EPOCHS + 1):
-        #     print("epoch %d" % epoch)
-        #     sys.stdout.flush()
-        #     indices = np.random.permutation(train_data_size)
-        #     sum_accuracy = 0
-        #     sum_loss = 0
+        val_interval = (10 if args.test else 100000), 'iteration'
+        log_interval = (10 if args.test else 1000), 'iteration'
 
-        #     for i in range(0, train_data_size, BATCH_SIZE):
-        #         r = indices[i: i + BATCH_SIZE]
-        #         x = Variable(chainer.cuda.to_gpu(x_train[r]))
-        #         y = Variable(chainer.cuda.to_gpu(y_train[r]))
-        #         model.zerograds()
-        #         loss = model(x, y)
-        #         loss.backward()
-        #         optimizer.update()
+        # trainer.extend(TestModeEvaluator(val_iter, model, device=args.gpu),
+        #                trigger=val_interval)
+        # trainer.extend(extensions.dump_graph('main/loss'))
+        # trainer.extend(extensions.snapshot(), trigger=val_interval)
+        # trainer.extend(extensions.snapshot_object(
+        #     model, 'model_iter_{.updater.iteration}'), trigger=val_interval)
+        # # Be careful to pass the interval directly to LogReport
+        # # (it determines when to emit log rather than when to read observations)
+        # trainer.extend(extensions.LogReport(trigger=log_interval))
+        # trainer.extend(extensions.observe_lr(), trigger=log_interval)
+        # trainer.extend(extensions.PrintReport([
+        #     'epoch', 'iteration', 'main/loss', 'validation/main/loss',
+        #     'main/accuracy', 'validation/main/accuracy', 'lr'
+        # ]), trigger=log_interval)
+        # trainer.extend(extensions.ProgressBar(update_interval=10))
 
-        #         sum_loss += loss.data * BATCH_SIZE
-        #         sum_accuracy += model.accuracy.data * BATCH_SIZE
+        # if args.resume:
+        #     chainer.serializers.load_npz(args.resume, trainer)
 
-        #     print("train mean loss {a}, accuracy {b}".format(a=sum_loss / train_data_size, b=sum_accuracy / train_data_size))
-        #     sys.stdout.flush()
-        #     test(x_test, y_test, model)
-        #     optimizer.lr *= DECAY_FACTOR
+        # trainer.run()
 
-        # # _/_/_/ testing _/_/_/
-
-        # test(x_test, y_test, model)
-
-        # # _/_/_/ saving _/_/_/
-
-        # pickle.dump(model, open(PICKLE_DUMP_PATH, "wb"))
     except IOError, e:
         print(e)

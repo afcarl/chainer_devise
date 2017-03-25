@@ -1,8 +1,11 @@
 #!/bin/sh
 
 ./train.py \
-    --initial_model_path /Users/kumada/Data/image_net/bvlc_reference_caffenet-2017-01-08.pkl \
-    --root_dir_path      /Users/kumada/Data/image_net/selected_images_256 \
-    --training_data_path /Users/kumada/Data/image_net/selected_images_256/train_valid_.txt \
-    --testing_data_path  /Users/kumada/Data/image_net/selected_images_256/test_.txt \
-    --mean_image_path    /Users/kumada/Data/image_net/ilsvrc_2012_mean.npy
+    --initial_model_path /home/ubuntu/data/models/chainer/bvlc_reference_caffenet/bvlc_reference_caffenet-2017-01-08.pkl \
+    --root_dir_path      /home/ubuntu/data/devise/selected_images_256 \
+    --training_data_path /home/ubuntu/data/devise/selected_images_256/train_valid_.txt \
+    --testing_data_path  /home/ubuntu/data/devise/selected_images_256/test_.txt \
+    --gpu 0  \
+    --epoch 1  \
+    --out_dir_path       /home/ubuntu/results/devise \
+    --mean_image_path    /home/ubuntu/libs/caffe-master/python/caffe/imagenet/ilsvrc_2012_mean.npy
