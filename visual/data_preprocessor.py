@@ -1,46 +1,56 @@
 #!/usr/bin/env python
 # coding:utf-8
 
-import cv2
-import os
-import numpy as np
 from image_cropper import *  # noqa
+from chainer import dataset
+from chainer import datasets
+import random  # noqa
 
 
-class DataPreprocessor(object):
-
-    # test ok
-    def __init__(self, cropping_size, mean_image_path):
-        self.image_cropper = ImageCropper(cropping_size)
-        mean_image = np.load(mean_image_path)  # (3, 256, 256)
-        self.cropped_mean_image = self.image_cropper.crop_center_image(mean_image, is_scaled=False)
+class DataPreprocessor(dataset.DatasetMixin):
 
     # test ok
-    @staticmethod
-    def image_generator(dir_path, is_verbose=False):
-        for basename in os.listdir(dir_path):
-            path = os.path.join(dir_path, basename)
-            image = cv2.imread(path)
-            if image is not None:
-                name, _ = os.path.splitext(basename)
-                yield image, name
-            else:
-                if is_verbose:
-                    print("invalid image: {}".format(path))
+    def __init__(self, path, root, mean, crop_size, random=True, is_scaled=True):
+        self.base = datasets.LabeledImageDataset(path, root)
+        self.mean = mean.astype('f')
+        self.crop_size = crop_size
+        self.random = random
+        self.is_scaled = is_scaled
 
-    def save_to_one_directory(self, in_dir_path, out_dir_path):
-        for image, name in DataPreprocessor.image_generator(in_dir_path, is_verbose=False):
-            image = image.transpose(2, 0, 1)
-            diff = self.image_cropper.crop_center_image(image, is_scaled=False) - self.cropped_mean_image
-            out_path = os.path.join(out_dir_path, name + ".npy")
-            np.save(out_path, diff)
+    # test ok
+    def __len__(self):
+        return len(self.base)
 
-    def save_images(self, input_dir_path, output_dir_path):
-        for dir_path in os.listdir(input_dir_path):
-            in_sub_dir_path = os.path.join(input_dir_path, dir_path)
-            if not os.path.isdir(in_sub_dir_path):
-                continue
-            out_sub_dir_path = os.path.join(output_dir_path, dir_path)
-            if not os.path.isdir(out_sub_dir_path):
-                os.mkdir(out_sub_dir_path)
-            self.save_to_one_directory(in_sub_dir_path, out_sub_dir_path)
+    # test ok
+    def get_example(self, i):
+        # It reads the i-th image/label pair and return a preprocessed image.
+        # It applies following preprocesses:
+        #   - Cropping (random or center rectangular)
+        #   - Random flip
+        #   - Scaling to [0, 1] value
+        crop_size = self.crop_size
+
+        image, label = self.base[i]
+        _, h, w = image.shape
+
+        if self.random:
+            # Randomly crop a region
+            top = random.randint(0, h - crop_size - 1)
+            left = random.randint(0, w - crop_size - 1)
+        else:
+            # Crop the center
+            top = (h - crop_size) // 2
+            left = (w - crop_size) // 2
+
+        # Crop an image
+        bottom = top + crop_size
+        right = left + crop_size
+        image = image[:, top:bottom, left:right]
+
+        # Subtract a mean image
+        image -= self.mean[:, top:bottom, left:right]
+
+        # If necessary, scale an image
+        if self.is_scaled:
+            image *= (1.0 / 255.0)
+        return image, label

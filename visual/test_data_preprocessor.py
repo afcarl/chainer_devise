@@ -1,38 +1,30 @@
 #!/usr/bin/env python
 # coding:utf-8
-import cv2
+
+
 import unittest
-from data_preprocessor import *  # noqa
+import data_preprocessor
+from chainer import datasets
+import numpy as np
+import os
+import cv2
 import shutil
 
 TEST_INPUT_DIR_PATH = "../unittest_input"
 TEST_OUTPUT_DIR_PATH = "../unittest_output"
-SUB_DIR_NAMES = ["hoge", "foo"]
 MEAN_NAME = "meang.npy"
 MEAN_VALUE = 3
 FILE_NAMES = ["1", "2"]
-CROPPING_SIZE = 227
+SUB_DIR_NAMES = ["hoge", "foo"]
+TEXT_FILE_NAME = "file.txt"
+IN_SIZE = 227
 EPSILON = 1.0e-08
 
 
 class TestDataPreprocessor(unittest.TestCase):
 
-    @staticmethod
-    def make_dirs():
-        sub_dir_paths = [os.path.join(TEST_INPUT_DIR_PATH, name) for name in SUB_DIR_NAMES]
-        for sub_dir_path in sub_dir_paths:
-            if not os.path.isdir(sub_dir_path):
-                os.makedirs(sub_dir_path)
-        return sub_dir_paths
-
-    @staticmethod
-    def make_test_image(value):
-        image = np.zeros((256, 256, 3))
-        image[14:241, 14:241, :] = value
-        return image
-
+    # make input dirs and input files for unit test
     def setUp(self):
-        # make input dirs and input files
         sub_dir_paths = TestDataPreprocessor.make_dirs()
         for sub_dir_path in sub_dir_paths:
             for file_name in FILE_NAMES:
@@ -42,54 +34,89 @@ class TestDataPreprocessor(unittest.TestCase):
         mean_image = TestDataPreprocessor.make_test_image(MEAN_VALUE).transpose(2, 0, 1)
         mean_image_path = os.path.join(TEST_INPUT_DIR_PATH, MEAN_NAME)
         np.save(mean_image_path, mean_image)
+        TestDataPreprocessor.make_text_file()
 
-    def test_save_images(self):
-        mean_image_path = os.path.join(TEST_INPUT_DIR_PATH, MEAN_NAME)
-        preprocessor = DataPreprocessor(CROPPING_SIZE, mean_image_path)
-        if not os.path.isdir(TEST_OUTPUT_DIR_PATH):
-            os.mkdir(TEST_OUTPUT_DIR_PATH)
+    @staticmethod
+    def make_text_file():
+        path = os.path.join(TEST_INPUT_DIR_PATH, TEXT_FILE_NAME)
+        with open(path, "w") as fin:
+            k = 0
+            for subdir in SUB_DIR_NAMES:
+                for name in FILE_NAMES:
+                    line = "{}/{}.png {}\n".format(subdir, name, k)
+                    fin.write(line)
+                    k += 1
 
-        preprocessor.save_images(TEST_INPUT_DIR_PATH, TEST_OUTPUT_DIR_PATH)
+    @staticmethod
+    def make_test_image(value):
+        image = np.zeros((256, 256, 3))
+        image[14:241, 14:241, :] = value
+        return image
 
-        for dirname in os.listdir(TEST_OUTPUT_DIR_PATH):
-            path = os.path.join(TEST_OUTPUT_DIR_PATH, dirname)
-            self.check_images(path)
+    @staticmethod
+    def make_dirs():
+        sub_dir_paths = [os.path.join(TEST_INPUT_DIR_PATH, name) for name in SUB_DIR_NAMES]
+        for sub_dir_path in sub_dir_paths:
+            if not os.path.isdir(sub_dir_path):
+                os.makedirs(sub_dir_path)
+        return sub_dir_paths
 
-    def test_image_generator(self):
-        c = 0
-        names = []
-        input_dir_path = os.path.join(TEST_INPUT_DIR_PATH, SUB_DIR_NAMES[0])
-        for image, name in DataPreprocessor.image_generator(input_dir_path, is_verbose=False):
-            c += 1
-            names.append(name)
-        self.assertTrue(c == 2)
-        self.assertTrue(FILE_NAMES == names)
+    def test_LabeledImageDataset(self):
+        file_path = os.path.join(TEST_INPUT_DIR_PATH, TEXT_FILE_NAME)
+        root = TEST_INPUT_DIR_PATH
+        dataset = datasets.LabeledImageDataset(file_path, root)
+        self.assertTrue(len(dataset) == 4)
+        answer_labels = [0, 1, 2, 3]
+        for answer_label, (image, label) in zip(answer_labels, dataset):
+            self.assertTrue(answer_label == label)
+            self.assertTrue(image.shape == (3, 256, 256))
 
     def test_init(self):
-        mean_image_path = os.path.join(TEST_INPUT_DIR_PATH, MEAN_NAME)
-        preprocessor = DataPreprocessor(CROPPING_SIZE, mean_image_path)
-        cropped_mean_image = preprocessor.cropped_mean_image
-        self.assertTrue((3, CROPPING_SIZE, CROPPING_SIZE) == cropped_mean_image.shape)
-        self.assertTrue(np.all(np.abs(cropped_mean_image - MEAN_VALUE) < EPSILON))
+        file_path = os.path.join(TEST_INPUT_DIR_PATH, TEXT_FILE_NAME)
+        root = TEST_INPUT_DIR_PATH
+        mean_path = os.path.join(TEST_INPUT_DIR_PATH, MEAN_NAME)
+        mean = np.load(mean_path)
+        self.assertTrue(mean.shape == (3, 256, 256))
+        crop_size = IN_SIZE
+        preprocessor = data_preprocessor.DataPreprocessor(file_path, root, mean, crop_size)
+        answer_labels = [0, 1, 2, 3]
+        self.assertTrue(len(preprocessor) == 4)
+        dataset = preprocessor.base
+        for answer_label, (image, label) in zip(answer_labels, dataset):
+            self.assertTrue(answer_label == label)
+            self.assertTrue(image.shape == (3, 256, 256))
 
-    def check_images(self, output_dir_path):
-        answers = [int(item) - MEAN_VALUE for item in FILE_NAMES]
-        for i, item in enumerate(os.listdir(output_dir_path)):
-            path = os.path.join(output_dir_path, item)
-            image = np.load(path)
-            self.assertTrue(np.all(np.abs(image - answers[i]) < EPSILON))
+    def test_get_sample(self):
+        file_path = os.path.join(TEST_INPUT_DIR_PATH, TEXT_FILE_NAME)
+        root = TEST_INPUT_DIR_PATH
+        mean_path = os.path.join(TEST_INPUT_DIR_PATH, MEAN_NAME)
+        mean = np.load(mean_path)
+        crop_size = IN_SIZE
+        preprocessor = data_preprocessor.DataPreprocessor(file_path, root, mean, crop_size, random=False, is_scaled=False)
 
-    def test_save_to_one_directory(self):
-        mean_image_path = os.path.join(TEST_INPUT_DIR_PATH, MEAN_NAME)
-        preprocessor = DataPreprocessor(CROPPING_SIZE, mean_image_path)
-        input_dir_path = os.path.join(TEST_INPUT_DIR_PATH, SUB_DIR_NAMES[0])
-        output_dir_path = os.path.join(TEST_OUTPUT_DIR_PATH, SUB_DIR_NAMES[0])
-        if not os.path.isdir(output_dir_path):
-            os.makedirs(output_dir_path)
-        preprocessor.save_to_one_directory(input_dir_path, output_dir_path)
+        self.assertTrue(len(preprocessor) == 4)
+        answer_labels = [0, 1, 2, 3]
+        answer_images = [int(item) - MEAN_VALUE for item in FILE_NAMES] * 2
+        for i, (image, label) in enumerate(preprocessor):
+            self.assertTrue(answer_labels[i] == label)
+            self.assertTrue(image.shape == (3, IN_SIZE, IN_SIZE))
+            self.assertTrue(np.all(np.abs(image - answer_images[i]) < EPSILON))
 
-        # check values
-        self.check_images(output_dir_path)
+    def test_get_sample_with_scaling(self):
+        file_path = os.path.join(TEST_INPUT_DIR_PATH, TEXT_FILE_NAME)
+        root = TEST_INPUT_DIR_PATH
+        mean_path = os.path.join(TEST_INPUT_DIR_PATH, MEAN_NAME)
+        mean = np.load(mean_path)
+        crop_size = IN_SIZE
+        preprocessor = data_preprocessor.DataPreprocessor(file_path, root, mean, crop_size, random=False, is_scaled=True)
+
+        self.assertTrue(len(preprocessor) == 4)
+        answer_labels = [0, 1, 2, 3]
+        answer_images = [(int(item) - MEAN_VALUE) / 255.0 for item in FILE_NAMES] * 2
+        for i, (image, label) in enumerate(preprocessor):
+            self.assertTrue(answer_labels[i] == label)
+            self.assertTrue(image.shape == (3, IN_SIZE, IN_SIZE))
+            self.assertTrue(np.all(np.abs(image - answer_images[i]) < EPSILON))
 
     def tearDown(self):
         if os.path.isdir(TEST_INPUT_DIR_PATH):
