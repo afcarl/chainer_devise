@@ -6,7 +6,6 @@ from copy_model import *  # noqa
 from chainer.training import extensions
 import cPickle
 import os
-from data_loader import *  # noqa
 import argparse
 from data_preprocessor import DataPreprocessor
 from chainer import training
