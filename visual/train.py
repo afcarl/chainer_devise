@@ -1,50 +1,15 @@
 #!/usr/bin/env python
 # coding:utf-8
 
-# import chainer
-# from chainer import Variable
 from modified_reference_caffenet import *  # noqa
 from copy_model import *  # noqa
+from chainer.training import extensions
 import cPickle
 import os
 from data_loader import *  # noqa
-# import sys
 import argparse
 from data_preprocessor import DataPreprocessor
 from chainer import training
-
-# _/_/_/ paths _/_/_/
-# PICKLE_PATH = "/home/ubuntu/data/models/chainer/bvlc_reference_caffenet/bvlc_reference_caffenet-2017-01-08.pkl"
-# PICKLE_DUMP_PATH = "/home/ubuntu/results/devise/trainded_visual_model.pkl"
-# MEAN_IMAGE_PATH = "/home/ubuntu/libs/caffe-master/python/caffe/imagenet/ilsvrc_2012_mean.npy"
-
-
-# _/_/_/ training parameters _/_/_/
-# LEARNIN_RATE = 0.01
-# BATCH_SIZE = 20
-# EPOCHS = 100
-# DECAY_FACTOR = 0.97
-
-
-# _/_/_/ dataset _/_/_/
-# DATA_ROOT_DIR_PATH = "/home/ubuntu/data/selected_images_256"
-# TRAINING_DATA_PATH = os.path.join(DATA_ROOT_DIR_PATH, "train_valid.txt")
-# TESTING_DATA_PATH = os.path.join(DATA_ROOT_DIR_PATH, "test.txt")
-
-
-# def test(x_test, y_test, model):
-#     sum_accuracy = 0
-#     sum_loss = 0
-#     test_data_size = len(x_test)
-#     for i in range(0, test_data_size, BATCH_SIZE):
-#         x = chainer.Variable(chainer.cuda.to_gpu(x_test[i: i + BATCH_SIZE]))
-#         t = chainer.Variable(chainer.cuda.to_gpu(y_test[i: i + BATCH_SIZE]))
-#         loss = model(x, t)
-#         sum_loss += loss.data * BATCH_SIZE
-#         sum_accuracy += model.accuracy.data * BATCH_SIZE
-#
-#     print("test mean loss {a}, accuracy {b}".format(a=sum_loss / test_data_size, b=sum_accuracy / test_data_size))
-#     sys.stdout.flush()
 
 
 def check_path(path):
@@ -52,11 +17,26 @@ def check_path(path):
         raise IOError("{} is not found".format(path))
 
 
+def load_labels(path):
+    return sum([1 for _ in open(path)])
+
+
+class TestModeEvaluator(extensions.Evaluator):
+
+    def evaluate(self):
+        model = self.get_target('main')
+        model.train = False
+        ret = super(TestModeEvaluator, self).evaluate()
+        model.train = True
+        return ret
+
+
 if __name__ == "__main__":
     try:
         parser = argparse.ArgumentParser()
         parser.add_argument("--initial_model_path", help="input: set a path to an initial trained model file(.pkl)")
         parser.add_argument("--root_dir_path", help="input: set a path to an training/testing directory")
+        parser.add_argument("--label_path", help="input: set a path to a label file")
         parser.add_argument("--training_data_path", help="input: set a path to a training data file(.txt)")
         parser.add_argument("--testing_data_path", help="input: set a path to a testing data file(.txt)")
         parser.add_argument("--mean_image_path", help="input: set a path to a mean image file(.npy)")
@@ -66,12 +46,15 @@ if __name__ == "__main__":
         parser.add_argument('--test_batch_size', type=int, default=250, help='input: testing minibatch size')
         parser.add_argument('--epoch', type=int, default=10, help='input: number of epochs to train')
         parser.add_argument('--out_dir_path', default='result', help='output: set a path to output directory')
+        parser.add_argument('--test', action='store_true', default=False, help='option: test mode if this flag is set(default: False)')
+        parser.add_argument('--resume', default='', help='option: initialize the trainer from given file')
 
         args = parser.parse_args()
 
         # get paths
         initial_model_path = args.initial_model_path
         root_dir_path = args.root_dir_path
+        label_path = args.label_path
         training_data_path = args.training_data_path
         testing_data_path = args.testing_data_path
         mean_image_path = args.mean_image_path
@@ -80,6 +63,7 @@ if __name__ == "__main__":
         # check paths
         check_path(initial_model_path)
         check_path(root_dir_path)
+        check_path(label_path)
         check_path(training_data_path)
         check_path(testing_data_path)
         check_path(mean_image_path)
@@ -91,7 +75,8 @@ if __name__ == "__main__":
         original_model = cPickle.load(open(initial_model_path))
 
         # load a new model to be fine-tuned
-        modified_model = ModifiedReferenceCaffeNet()
+        class_size = load_labels(label_path)
+        modified_model = ModifiedReferenceCaffeNet(class_size)
 
         # copy W/b from the original model to the new one
         copy_model(original_model, modified_model)
@@ -120,29 +105,26 @@ if __name__ == "__main__":
         updater = training.StandardUpdater(train_iter, optimizer, device=args.gpu)
         trainer = training.Trainer(updater, (args.epoch, 'epoch'), args.out_dir_path)
 
-        val_interval = (10 if args.test else 100000), 'iteration'
+        test_interval = (10 if args.test else 100000), 'iteration'
         log_interval = (10 if args.test else 1000), 'iteration'
+        print(test_interval)
+        print(log_interval)
 
-        # trainer.extend(TestModeEvaluator(val_iter, model, device=args.gpu),
-        #                trigger=val_interval)
-        # trainer.extend(extensions.dump_graph('main/loss'))
-        # trainer.extend(extensions.snapshot(), trigger=val_interval)
-        # trainer.extend(extensions.snapshot_object(
-        #     model, 'model_iter_{.updater.iteration}'), trigger=val_interval)
-        # # Be careful to pass the interval directly to LogReport
-        # # (it determines when to emit log rather than when to read observations)
-        # trainer.extend(extensions.LogReport(trigger=log_interval))
-        # trainer.extend(extensions.observe_lr(), trigger=log_interval)
-        # trainer.extend(extensions.PrintReport([
-        #     'epoch', 'iteration', 'main/loss', 'validation/main/loss',
-        #     'main/accuracy', 'validation/main/accuracy', 'lr'
-        # ]), trigger=log_interval)
-        # trainer.extend(extensions.ProgressBar(update_interval=10))
+        trainer.extend(TestModeEvaluator(test_iter, modified_model, device=args.gpu), trigger=test_interval)
+        trainer.extend(extensions.dump_graph('main/loss'))
+        trainer.extend(extensions.snapshot(), trigger=val_interval)  # save a trainer
+        trainer.extend(extensions.snapshot_object(modified_model, 'model_iter_{.updater.iteration}'), trigger=test_interval)  # save a modified model
 
-        # if args.resume:
-        #     chainer.serializers.load_npz(args.resume, trainer)
+        # Be careful to pass the interval directly to LogReport
+        # (it determines when to emit log rather than when to read observations)
+        trainer.extend(extensions.LogReport(trigger=log_interval))
+        trainer.extend(extensions.observe_lr(), trigger=log_interval)
+        trainer.extend(extensions.PrintReport(['epoch', 'iteration', 'main/loss', 'validation/main/loss', 'main/accuracy', 'validation/main/accuracy', 'lr']), trigger=log_interval)
+        trainer.extend(extensions.ProgressBar(update_interval=10))
 
-        # trainer.run()
+        if args.resume:
+            chainer.serializers.load_npz(args.resume, trainer)
 
+        trainer.run()
     except IOError, e:
         print(e)

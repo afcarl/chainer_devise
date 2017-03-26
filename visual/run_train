@@ -1,11 +1,13 @@
 #!/bin/sh
-
+# bvlc_reference_caffenet-2017-01-08.pkl
 ./train.py \
-    --initial_model_path /home/ubuntu/data/models/chainer/bvlc_reference_caffenet/bvlc_reference_caffenet-2017-01-08.pkl \
+    --initial_model_path /home/ubuntu/data/models/chainer/bvlc_reference_caffenet/bvlc_reference_caffenet.pkl \
     --root_dir_path      /home/ubuntu/data/devise/selected_images_256 \
+    --label_path         /home/ubuntu/data/devise/selected_images_256/label.txt \
     --training_data_path /home/ubuntu/data/devise/selected_images_256/train_valid_.txt \
     --testing_data_path  /home/ubuntu/data/devise/selected_images_256/test_.txt \
-    --gpu 0  \
-    --epoch 1  \
+    --gpu 0 \
+    --epoch 1 \
     --out_dir_path       /home/ubuntu/results/devise \
-    --mean_image_path    /home/ubuntu/libs/caffe-master/python/caffe/imagenet/ilsvrc_2012_mean.npy
+    --mean_image_path    /home/ubuntu/libs/caffe-master/python/caffe/imagenet/ilsvrc_2012_mean.npy \
+    --test

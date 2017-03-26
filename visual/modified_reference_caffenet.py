@@ -8,9 +8,8 @@ class ModifiedReferenceCaffeNet(chainer.Chain):
     """Single-GPU AlexNet without partition toward the channel axis."""
 
     IN_SIZE = 227
-    CLASS_SIZE = 20
 
-    def __init__(self):
+    def __init__(self, class_size):
         super(ModifiedReferenceCaffeNet, self).__init__(
             conv1=L.Convolution2D(3, 96, 11, stride=4),  # pad=0
             conv2=L.Convolution2D(96, 256,  5, pad=2),  # stride=1
@@ -19,16 +18,11 @@ class ModifiedReferenceCaffeNet(chainer.Chain):
             conv5=L.Convolution2D(384, 256,  3, pad=1),
             fc6=L.Linear(9216, 4096),  # 9216=6x6x256
             fc7=L.Linear(4096, 4096),
-            modified_fc8=L.Linear(4096, ModifiedReferenceCaffeNet.CLASS_SIZE),
+            modified_fc8=L.Linear(4096, class_size),
         )
         self.train = True
 
-    def clear(self):
-        self.loss = None
-        self.accuracy = None
-
     def __call__(self, x, t):
-        self.clear()
 
         # conv1->relu1->pool1->norm1
         h = F.local_response_normalization(
@@ -91,6 +85,7 @@ class ModifiedReferenceCaffeNet(chainer.Chain):
         # modified fc8
         h = self.modified_fc8(h)
 
-        self.loss = F.softmax_cross_entropy(h, t)
-        self.accuracy = F.accuracy(h, t)
-        return self.loss
+        loss = F.softmax_cross_entropy(h, t)
+        accuracy = F.accuracy(h, t)
+        chainer.report({'loss': loss, 'accuracy': accuracy}, self)
+        return loss
