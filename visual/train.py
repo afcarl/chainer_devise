@@ -110,8 +110,6 @@ if __name__ == "__main__":
 
         test_interval = (10 if args.test else 100000), 'iteration'
         log_interval = (10 if args.test else 1000), 'iteration'
-        print(test_interval)
-        print(log_interval)
 
         trainer.extend(TestModeEvaluator(test_iter, modified_model, device=args.gpu), trigger=test_interval)
         trainer.extend(extensions.dump_graph('main/loss'))
