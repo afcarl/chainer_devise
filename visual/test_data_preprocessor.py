@@ -92,7 +92,8 @@ class TestDataPreprocessor(unittest.TestCase):
         mean_path = os.path.join(TEST_INPUT_DIR_PATH, MEAN_NAME)
         mean = np.load(mean_path)
         crop_size = IN_SIZE
-        preprocessor = data_preprocessor.DataPreprocessor(file_path, root, mean, crop_size, random=False, is_scaled=False)
+        preprocessor = data_preprocessor.DataPreprocessor(file_path, root, mean, crop_size, random=False,
+                                                          is_scaled=False)
 
         self.assertTrue(len(preprocessor) == 4)
         answer_labels = [0, 1, 2, 3]
@@ -108,7 +109,8 @@ class TestDataPreprocessor(unittest.TestCase):
         mean_path = os.path.join(TEST_INPUT_DIR_PATH, MEAN_NAME)
         mean = np.load(mean_path)
         crop_size = IN_SIZE
-        preprocessor = data_preprocessor.DataPreprocessor(file_path, root, mean, crop_size, random=False, is_scaled=True)
+        preprocessor = data_preprocessor.DataPreprocessor(file_path, root, mean, crop_size, random=False,
+                                                          is_scaled=True)
 
         self.assertTrue(len(preprocessor) == 4)
         answer_labels = [0, 1, 2, 3]

@@ -41,12 +41,14 @@ if __name__ == "__main__":
         parser.add_argument("--testing_data_path", help="input: set a path to a testing data file(.txt)")
         parser.add_argument("--mean_image_path", help="input: set a path to a mean image file(.npy)")
         parser.add_argument("--gpu", type=int, default=-1, help="input: GPU ID(negative value indicates CPU")
-        parser.add_argument('--loader_job', type=int, default=2, help='input: number of parallel data loading processes')
+        parser.add_argument('--loader_job', type=int, default=2,
+                            help='input: number of parallel data loading processes')
         parser.add_argument('--batch_size', type=int, default=32, help='input: learning minibatch size')
         parser.add_argument('--test_batch_size', type=int, default=250, help='input: testing minibatch size')
         parser.add_argument('--epoch', type=int, default=10, help='input: number of epochs to train')
         parser.add_argument('--out_dir_path', default='result', help='output: set a path to output directory')
-        parser.add_argument('--test', action='store_true', default=False, help='option: test mode if this flag is set(default: False)')
+        parser.add_argument('--test', action='store_true', default=False,
+                            help='option: test mode if this flag is set(default: False)')
         parser.add_argument('--resume', default='', help='option: initialize the trainer from given file')
 
         args = parser.parse_args()
@@ -93,7 +95,8 @@ if __name__ == "__main__":
         test = DataPreprocessor(testing_data_path, root_dir_path, mean, in_size, random=False, is_scaled=True)
 
         train_iter = chainer.iterators.MultiprocessIterator(train, args.batch_size, n_processes=args.loader_job)
-        test_iter = chainer.iterators.MultiprocessIterator(test, args.test_batch_size, repeat=False, n_processes=args.loader_job)
+        test_iter = chainer.iterators.MultiprocessIterator(test, args.test_batch_size, repeat=False,
+                                                           n_processes=args.loader_job)
 
         print("# _/_/_/ set up an optimizer _/_/_/")
 
@@ -112,14 +115,19 @@ if __name__ == "__main__":
 
         trainer.extend(TestModeEvaluator(test_iter, modified_model, device=args.gpu), trigger=test_interval)
         trainer.extend(extensions.dump_graph('main/loss'))
-        trainer.extend(extensions.snapshot(), trigger=val_interval)  # save a trainer
-        trainer.extend(extensions.snapshot_object(modified_model, 'model_iter_{.updater.iteration}'), trigger=test_interval)  # save a modified model
+        trainer.extend(extensions.snapshot(), trigger=test_interval)  # save a trainer
+        trainer.extend(extensions.snapshot_object(modified_model, 'model_iter_{.updater.iteration}'),
+                       trigger=test_interval)  # save a modified model
 
         # Be careful to pass the interval directly to LogReport
         # (it determines when to emit log rather than when to read observations)
         trainer.extend(extensions.LogReport(trigger=log_interval))
         trainer.extend(extensions.observe_lr(), trigger=log_interval)
-        trainer.extend(extensions.PrintReport(['epoch', 'iteration', 'main/loss', 'validation/main/loss', 'main/accuracy', 'validation/main/accuracy', 'lr']), trigger=log_interval)
+        trainer.extend(
+            extensions.PrintReport(
+                ['epoch', 'iteration', 'main/loss', 'validation/main/loss', 'main/accuracy',
+                 'validation/main/accuracy', 'lr']),
+            trigger=log_interval)
         trainer.extend(extensions.ProgressBar(update_interval=10))
 
         if args.resume:
