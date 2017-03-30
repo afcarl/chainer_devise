@@ -9,6 +9,7 @@ import os
 import argparse
 from data_preprocessor import DataPreprocessor
 from chainer import training
+import numpy as np
 
 
 def check_path(path):
@@ -24,9 +25,9 @@ class TestModeEvaluator(extensions.Evaluator):
 
     def evaluate(self):
         model = self.get_target('main')
-        model.train = False
+        model.select_phase('test')
         ret = super(TestModeEvaluator, self).evaluate()
-        model.train = True
+        model.select_phase('train')
         return ret
 
 
@@ -107,12 +108,12 @@ if __name__ == "__main__":
         updater = training.StandardUpdater(train_iter, optimizer, device=args.gpu)
         trainer = training.Trainer(updater, (args.epoch, 'epoch'), args.out_dir_path)
 
-        test_interval = (10 if args.test else 100000), 'iteration'
+        test_interval = (10 if args.test else 1000), 'iteration'
         log_interval = (10 if args.test else 1000), 'iteration'
 
         trainer.extend(TestModeEvaluator(test_iter, modified_model, device=args.gpu), trigger=test_interval)
-        trainer.extend(extensions.dump_graph('main/loss'))
-        trainer.extend(extensions.snapshot(), trigger=test_interval)  # save a trainer
+        trainer.extend(extensions.dump_graph('main/loss'))  # yield cg.dot
+        trainer.extend(extensions.snapshot(), trigger=test_interval)  # save a trainer for resuming training
         trainer.extend(extensions.snapshot_object(modified_model, 'model_iter_{.updater.iteration}'),
                        trigger=test_interval)  # save a modified model
 

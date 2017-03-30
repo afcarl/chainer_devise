@@ -20,7 +20,20 @@ class ModifiedReferenceCaffeNet(chainer.Chain):
             fc7=L.Linear(4096, 4096),
             modified_fc8=L.Linear(4096, class_size),
         )
-        self.train = True
+        self.select_phase('train')
+
+    def select_phase(self, phase):
+        if phase == 'predict':
+            self.train = False
+            self.predict = True
+        elif phase == 'train':
+            self.train = True
+            self.predict = False
+        elif phase == 'test':
+            self.train = False
+            self.predict = False
+        else:
+            raise Exception('unknown phase')
 
     def __call__(self, x, t):
 
@@ -85,7 +98,10 @@ class ModifiedReferenceCaffeNet(chainer.Chain):
         # modified fc8
         h = self.modified_fc8(h)
 
-        loss = F.softmax_cross_entropy(h, t)
-        accuracy = F.accuracy(h, t)
-        chainer.report({'loss': loss, 'accuracy': accuracy}, self)
-        return loss
+        if self.predict:
+            return F.softmax(h)
+        else:
+            loss = F.softmax_cross_entropy(h, t)
+            accuracy = F.accuracy(h, t)
+            chainer.report({'loss': loss, 'accuracy': accuracy}, self)
+            return loss
