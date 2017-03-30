@@ -38,6 +38,7 @@ train : test : valid = 6 : 3 : 1とした。
 
 # test.txtとtrain_valid.txtの作成
 total_list.txtにgrepを適用して、test.txtとtrain_valid.txtを作る。
+test_.txt, train_valid_.txtはtestやtainなどの文字列を取り除きたものである。
 
 # 画像のくり抜きと平均画像からの差分
 - 256x256の画像の中心部分を227x227のサイズにくり抜く。
@@ -55,6 +56,15 @@ chainer.dataset.DatasetMixinを使う。
 
 # caffe modelの変換
 `visual/load_caffemodel.py`を使って、caffemodelをchainerのモデルに変換する。
+
+# 訓練
+`run_train.py`を実行する。出力ディレクトリに以下のファイルが出力される。
+- log: 訓練履歴
+- cg.dot: このファイルからグラフ構造を視覚化できる。
+- model_iter_xxx: モデルのスナップショット
+- snapshot_iter_xxx: trainerのスナップショット。これを使って訓練を再開できる。
+注意点：訓練の再開に必要なものはsnapshot_iter_xxxだけである。
+        つまり、modelの構築は必要ない(たぶん)。
 
 # enwikiの加工
 ## ruby関係のインストール。
