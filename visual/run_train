@@ -7,7 +7,8 @@
     --training_data_path /home/ubuntu/data/devise/selected_images_256/train_valid_.txt \
     --testing_data_path  /home/ubuntu/data/devise/selected_images_256/test_.txt \
     --gpu 0 \
-    --epoch 1 \
+    --epoch 10 \
+    --batch_size 200 \
+    --test_batch_size 200 \
     --out_dir_path       /home/ubuntu/results/devise \
-    --mean_image_path    /home/ubuntu/libs/caffe-master/python/caffe/imagenet/ilsvrc_2012_mean.npy \
-    --test
+    --mean_image_path    /home/ubuntu/libs/caffe-master/python/caffe/imagenet/ilsvrc_2012_mean.npy

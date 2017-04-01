@@ -100,7 +100,8 @@ if __name__ == "__main__":
 
         print("# _/_/_/ set up an optimizer _/_/_/")
 
-        optimizer = chainer.optimizers.MomentumSGD(lr=0.01, momentum=0.9)
+        # optimizer = chainer.optimizers.MomentumSGD(lr=0.01, momentum=0.9)
+        optimizer = chainer.optimizers.Adam()
         optimizer.setup(modified_model)
 
         print("# _/_/_/ set up a trainer _/_/_/")
@@ -109,9 +110,9 @@ if __name__ == "__main__":
         trainer = training.Trainer(updater, (args.epoch, 'epoch'), args.out_dir_path)
 
         test_interval = (10 if args.test else 1000), 'iteration'
-        log_interval = (10 if args.test else 1000), 'iteration'
+        log_interval = (10 if args.test else 50), 'iteration'
 
-        trainer.extend(TestModeEvaluator(test_iter, modified_model, device=args.gpu), trigger=test_interval)
+        trainer.extend(TestModeEvaluator(test_iter, modified_model, device=args.gpu), trigger=log_interval)
         trainer.extend(extensions.dump_graph('main/loss'))  # yield cg.dot
         trainer.extend(extensions.snapshot(), trigger=test_interval)  # save a trainer for resuming training
         trainer.extend(extensions.snapshot_object(modified_model, 'model_iter_{.updater.iteration}'),
@@ -119,14 +120,24 @@ if __name__ == "__main__":
 
         # Be careful to pass the interval directly to LogReport
         # (it determines when to emit log rather than when to read observations)
-        trainer.extend(extensions.LogReport(trigger=log_interval))
+        trainer.extend(extensions.LogReport(trigger=log_interval))  # yield 'log'
         trainer.extend(extensions.observe_lr(), trigger=log_interval)
-        trainer.extend(
-            extensions.PrintReport(
-                ['epoch', 'iteration', 'main/loss', 'validation/main/loss', 'main/accuracy',
-                 'validation/main/accuracy', 'lr']),
-            trigger=log_interval)
-        trainer.extend(extensions.ProgressBar(update_interval=10))
+
+        # Save two plot images to the result dir
+        # trainer.extend(
+        #     extensions.PlotReport(['main/loss', 'validation/main/loss'],
+        #                           'epoch', file_name='loss.png'))
+        # trainer.extend(
+        #     extensions.PlotReport(
+        #         ['main/accuracy', 'validation/main/accuracy'],
+        #         'epoch', file_name='accuracy.png'))
+
+        # trainer.extend(
+        #     extensions.PrintReport(
+        #         ['epoch', 'iteration', 'main/loss', 'validation/main/loss', 'main/accuracy',
+        #          'validation/main/accuracy', 'lr']),
+        #     trigger=log_interval)
+        # trainer.extend(extensions.ProgressBar(update_interval=10))
 
         if args.resume:
             chainer.serializers.load_npz(args.resume, trainer)
