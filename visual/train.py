@@ -109,7 +109,7 @@ if __name__ == "__main__":
         updater = training.StandardUpdater(train_iter, optimizer, device=args.gpu)
         trainer = training.Trainer(updater, (args.epoch, 'epoch'), args.out_dir_path)
 
-        test_interval = (10 if args.test else 1000), 'iteration'
+        test_interval = (10 if args.test else 3000), 'iteration'
         log_interval = (10 if args.test else 50), 'iteration'
 
         trainer.extend(TestModeEvaluator(test_iter, modified_model, device=args.gpu), trigger=log_interval)
