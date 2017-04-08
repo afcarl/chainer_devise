@@ -126,7 +126,7 @@ if __name__ == "__main__":
         # Save two plot images to the result dir
         trainer.extend(
             extensions.PlotReport(
-                ['main/loss', 'validation/main/loss'], 'iteration', trigger=test_inteval, file_name='loss.png'))
+                ['main/loss', 'validation/main/loss'], 'iteration', trigger=test_interval, file_name='loss.png'))
         trainer.extend(
             extensions.PlotReport(
                 ['main/accuracy', 'validation/main/accuracy'], 'iteration', trigger=test_interval, file_name='accuracy.png'))
