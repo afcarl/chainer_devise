@@ -51,8 +51,9 @@ test_.txt, train_valid_.txtはtestやtainなどの文字列を取り除きたも
 - 256x256の画像の中心部分を227x227のサイズにくり抜く。
 - 差分画像もくり抜き、差分を取る。
 - batch size分の画像とラベルを返す。
+
 chainer.dataset.DatasetMixinを使う。
-既存のdata_preprocessor.pyを書き換える。
+既存のdata_preprocessor.pyを書き換えた。
 
 # caffe modelの変換
 `visual/load_caffemodel.py`を使って、caffemodelをchainerのモデルに変換する。
