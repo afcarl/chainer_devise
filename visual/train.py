@@ -51,6 +51,7 @@ if __name__ == "__main__":
                             help='option: test mode if this flag is set(default: False)')
         parser.add_argument('--resume', default='', help='option: initialize the trainer from given file')
         parser.add_argument('--log_interval', type=int, help='input: test interval')
+        parser.add_argument('--model_epoch', type=int, default=1, help='input: epoch to save model')
 
         args = parser.parse_args()
 
@@ -111,12 +112,13 @@ if __name__ == "__main__":
         trainer = training.Trainer(updater, (args.epoch, 'epoch'), args.out_dir_path)
 
         log_interval = (10 if args.test else args.log_interval), 'iteration'
+        model_epoch = (1 if args.test else args.model_epoch), 'epoch'
 
-        trainer.extend(TestModeEvaluator(test_iter, modified_model, device=args.gpu), trigger=log_interval)
-        # trainer.extend(extensions.dump_graph('main/loss'))  # yield cg.dot
-        # trainer.extend(extensions.snapshot(), trigger=test_interval)  # save a trainer for resuming training
-        # trainer.extend(extensions.snapshot_object(modified_model, 'model_iter_{.updater.iteration}'),
-        #               trigger=test_interval)  # save a modified model
+        trainer.extend(TestModeEvaluator(test_iter, modified_model, device=args.gpu), trigger=test_interval)
+        trainer.extend(extensions.dump_graph('main/loss'))  # yield cg.dot
+        trainer.extend(extensions.snapshot(), trigger=model_epoch)  # save a trainer for resuming training
+        trainer.extend(extensions.snapshot_object(modified_model, 'model_iter_{.updater.iteration}'),
+                       trigger=model_epoch)  # save a modified model
 
         # Be careful to pass the interval directly to LogReport
         # (it determines when to emit log rather than when to read observations)
