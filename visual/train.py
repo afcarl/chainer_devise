@@ -114,7 +114,7 @@ if __name__ == "__main__":
         log_interval = (10 if args.test else args.log_interval), 'iteration'
         model_epoch = (1 if args.test else args.model_epoch), 'epoch'
 
-        trainer.extend(TestModeEvaluator(test_iter, modified_model, device=args.gpu), trigger=test_interval)
+        trainer.extend(TestModeEvaluator(test_iter, modified_model, device=args.gpu), trigger=log_interval)
         trainer.extend(extensions.dump_graph('main/loss'))  # yield cg.dot
         trainer.extend(extensions.snapshot(), trigger=model_epoch)  # save a trainer for resuming training
         trainer.extend(extensions.snapshot_object(modified_model, 'model_iter_{.updater.iteration}'),
