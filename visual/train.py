@@ -50,7 +50,7 @@ if __name__ == "__main__":
         parser.add_argument('--test', action='store_true', default=False,
                             help='option: test mode if this flag is set(default: False)')
         parser.add_argument('--resume', default='', help='option: initialize the trainer from given file')
-        parser.add_argument('--test_interval', type=int, help='input: test interval')
+        parser.add_argument('--log_interval', type=int, help='input: test interval')
 
         args = parser.parse_args()
 
@@ -110,9 +110,9 @@ if __name__ == "__main__":
         updater = training.StandardUpdater(train_iter, optimizer, device=args.gpu)
         trainer = training.Trainer(updater, (args.epoch, 'epoch'), args.out_dir_path)
 
-        test_interval = (10 if args.test else args.test_interval), 'iteration'
+        log_interval = (10 if args.test else args.log_interval), 'iteration'
 
-        trainer.extend(TestModeEvaluator(test_iter, modified_model, device=args.gpu), trigger=test_interval)
+        trainer.extend(TestModeEvaluator(test_iter, modified_model, device=args.gpu), trigger=log_interval)
         # trainer.extend(extensions.dump_graph('main/loss'))  # yield cg.dot
         # trainer.extend(extensions.snapshot(), trigger=test_interval)  # save a trainer for resuming training
         # trainer.extend(extensions.snapshot_object(modified_model, 'model_iter_{.updater.iteration}'),
@@ -120,22 +120,22 @@ if __name__ == "__main__":
 
         # Be careful to pass the interval directly to LogReport
         # (it determines when to emit log rather than when to read observations)
-        trainer.extend(extensions.LogReport(trigger=test_interval))  # yield 'log'
-        trainer.extend(extensions.observe_lr(), trigger=test_interval)
+        trainer.extend(extensions.LogReport(trigger=log_interval))  # yield 'log'
+        trainer.extend(extensions.observe_lr(), trigger=log_interval)
 
         # Save two plot images to the result dir
         trainer.extend(
             extensions.PlotReport(
-                ['main/loss', 'validation/main/loss'], 'iteration', trigger=test_interval, file_name='loss.png'))
+                ['main/loss', 'validation/main/loss'], 'iteration', trigger=log_interval, file_name='loss.png'))
         trainer.extend(
             extensions.PlotReport(
-                ['main/accuracy', 'validation/main/accuracy'], 'iteration', trigger=test_interval, file_name='accuracy.png'))
+                ['main/accuracy', 'validation/main/accuracy'], 'iteration', trigger=log_interval, file_name='accuracy.png'))
 
         # trainer.extend(
         #     extensions.PrintReport(
         #         ['epoch', 'iteration', 'main/loss', 'validation/main/loss', 'main/accuracy',
         #          'validation/main/accuracy', 'lr']),
-        #     trigger=test_interval)
+        #     trigger=log_interval)
         # trainer.extend(extensions.ProgressBar(update_interval=10))
 
         if args.resume:
