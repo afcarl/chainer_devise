@@ -133,11 +133,11 @@ if __name__ == "__main__":
             extensions.PlotReport(
                 ['main/accuracy', 'validation/main/accuracy'], 'iteration', trigger=log_interval, file_name='accuracy.png'))
 
-        trainer.extend(
-            extensions.PrintReport(
-                ['epoch', 'iteration', 'main/loss', 'validation/main/loss', 'main/accuracy',
-                 'validation/main/accuracy', 'lr']),
-            trigger=log_interval)
+        # trainer.extend(
+        #     extensions.PrintReport(
+        #         ['epoch', 'iteration', 'main/loss', 'validation/main/loss', 'main/accuracy',
+        #          'validation/main/accuracy', 'lr']),
+        #     trigger=log_interval)
         # trainer.extend(extensions.ProgressBar(update_interval=10))
 
         if args.resume:
