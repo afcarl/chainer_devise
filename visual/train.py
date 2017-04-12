@@ -102,8 +102,8 @@ if __name__ == "__main__":
 
         print("# _/_/_/ set up an optimizer _/_/_/")
 
-        # optimizer = chainer.optimizers.MomentumSGD(lr=0.01, momentum=0.9)
-        optimizer = chainer.optimizers.Adam()
+        optimizer = chainer.optimizers.MomentumSGD(lr=0.01, momentum=0.9)
+        # optimizer = chainer.optimizers.Adam()
         optimizer.setup(modified_model)
 
         print("# _/_/_/ set up a trainer _/_/_/")
@@ -115,6 +115,8 @@ if __name__ == "__main__":
         model_epoch = (1 if args.test else args.model_epoch), 'epoch'
 
         trainer.extend(TestModeEvaluator(test_iter, modified_model, device=args.gpu), trigger=log_interval)
+        trainer.extend(extensions.ExponentialShift('lr', 0.97), trigger=(1, 'epoch'))
+
         trainer.extend(extensions.dump_graph('main/loss'))  # yield cg.dot
         trainer.extend(extensions.snapshot(), trigger=model_epoch)  # save a trainer for resuming training
         trainer.extend(extensions.snapshot_object(modified_model, 'model_iter_{.updater.iteration}'),
