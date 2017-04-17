@@ -83,8 +83,8 @@ class ModifiedReferenceCaffeNet(chainer.Chain):
             F.relu(
                 self.fc6(h)
             ),
-            train=self.train
-            # ratio=0.5
+            train=self.train,
+            ratio=0.8
         )
 
         # fc7->relu7->drop7
@@ -92,7 +92,8 @@ class ModifiedReferenceCaffeNet(chainer.Chain):
             F.relu(
                 self.fc7(h)
             ),
-            train=self.train
+            train=self.train,
+            ratio=0.8
         )
 
         # modified fc8
