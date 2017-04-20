@@ -64,8 +64,9 @@ chainer.dataset.DatasetMixinを使う。
 - cg.dot: このファイルからグラフ構造を視覚化できる。
 - model_iter_xxx: モデルのスナップショット
 - snapshot_iter_xxx: trainerのスナップショット。これを使って訓練を再開できる。
+
 注意点：訓練の再開に必要なものはsnapshot_iter_xxxだけである。
-        つまり、modelの構築は必要ない(たぶん)。予測するときにmodelは必要である。
+つまり、modelの構築は必要ない(たぶん)。予測するときにmodelは必要である。
 
 # enwikiの加工
 ## ruby関係のインストール。
