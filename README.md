@@ -68,6 +68,34 @@ chainer.dataset.DatasetMixinを使う。
 注意点：訓練の再開に必要なものはsnapshot_iter_xxxだけである。
 つまり、modelの構築は必要ない(たぶん)。予測するときにmodelは必要である。
 
+# 学習結果-1
+学習結果は以下の場所に保存してある。<br>
+EC2では
+```
+/home/ubuntu/results/devise
+```
+localでは<br>
+```
+/Users/kumada/Documents/device
+```
+である。ディレクトリ名は、そこに納められた結果を導出する際に使用したコードのtag名と一致している。
+クローリングした全画像を使用した。学習曲線は以下のとおり。<br><br>
+20170414-09-19
+![正解率](./readme_images/20170414-09-19/accuracy.png)
+![誤差](./readme_images/20170414-09-19/loss.png)
+20170418-07-14
+![正解率](./readme_images/20170418-07-14/accuracy.png)
+![誤差](./readme_images/20170418-07-14/loss.png)
+いろいろ試行錯誤したが上記が限界である。テスト画像に対する正解率は0.6を辛うじて越す程度である。
+精度を上げるため、200枚以下のディレクトリを捨てることにする。現在selected_images_256に納められている画像は反転画像を含む。
+この各ディレクトリ内の画像枚数が200枚以下のものを捨てることにする。
+現在の画像枚数を以下のファイルに記入した。
+```
+/Users/kumada/Data/image_net/selected_images_256_num_images
+```
+このファイルを見て捨てるべきクラスを判定する。判定処理は`run_select_classes`である。
+
+
 # enwikiの加工
 ## ruby関係のインストール。
 ```

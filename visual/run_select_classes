@@ -1,0 +1,5 @@
+#!/bin/sh
+
+./select_classes.py \
+        --num_file_path /Volumes/TOSHIBA\ EXT/mac/image_net/selected_images_256_num_images \
+        --lower_num 100 
