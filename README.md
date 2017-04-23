@@ -93,7 +93,12 @@ localでは<br>
 ```
 /Users/kumada/Data/image_net/selected_images_256_num_images
 ```
-このファイルを見て捨てるべきクラスを判定する。判定処理は`run_select_classes`である。
+このファイルを見て捨てるべきクラスを判定する。`run_select_classes`を使用した。
+削除後のクラス数は130となる。出力先は
+```
+/Users/kumada/Data/image_net/selected_images_256_greater_than_200_images
+```
+である。
 
 
 # enwikiの加工
