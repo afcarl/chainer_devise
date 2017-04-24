@@ -38,7 +38,13 @@ train : test : valid = 6 : 3 : 1とした。
 
 # test.txtとtrain_valid.txtの作成
 total_list.txtにgrepを適用して、test.txtとtrain_valid.txtを作る。
-test_.txt, train_valid_.txtはtestやtainなどの文字列を取り除きたものである。
+test_.txt, train_valid_.txtはtestやtainなどの文字列を取り除いたものである。
+```
+cat total_list.txt | grep -e " train" -e " valid" > train_valid.txt
+cat total_list.txt | grep " test" > test.txt
+cut -d " " -f1,2 test.txt  > test_.txt
+cut -d " " -f1,2 train_valid.txt  > train_valid_.txt
+```
 
 # 画像のくり抜きと平均画像からの差分
 - 256x256の画像の中心部分を227x227のサイズにくり抜く。

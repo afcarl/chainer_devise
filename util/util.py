@@ -44,7 +44,7 @@ def make_labels(path, output_path):
     ls = list(result)
     with open(output_path, "w") as fout:
         for (i, l) in enumerate(ls):
-            fout.write("{i} {l}\n".format(i=i, l=l))
+            fout.write("{i} {L}\n".format(i=i, L=l))
 
 
 LabelInfo = collections.namedtuple("LabelInfo", ["val", "train", "trainval"])
@@ -54,7 +54,7 @@ def extract_file_path(path, label, fout):
     for line in open(path):
         tokens = line.strip().split()
         if tokens[1] == "1":
-            fout.write("{p} {l}\n".format(p=tokens[0], l=label))
+            fout.write("{p} {L}\n".format(p=tokens[0], L=label))
 
 
 def make_dataset(path, kind, output_path):
@@ -77,7 +77,7 @@ def make_full_path_dataset(dataset_path, image_dir_path,
                 label = tokens[1]
                 full_path = os.path.join(image_dir_path, filename + ".jpg")
                 assert os.path.exists(full_path), ""
-                fout.write("{p} {l}\n".format(p=full_path, l=label))
+                fout.write("{p} {L}\n".format(p=full_path, L=label))
 
 
 def split_dataset(full_path_dataset_path, rate):
@@ -95,10 +95,10 @@ def split_dataset(full_path_dataset_path, rate):
 
 if __name__ == "__main__":
 
-    # make_labels(DATA_DIR, LABEL_DICT_PATH)
+    make_labels(DATA_DIR, LABEL_DICT_PATH)
     # make_dataset(DATA_DIR, "trainval", DATASET_PATH)
 
     # make_full_path_dataset(DATASET_PATH, IMAGE_DIR_PATH,
     #                        FULL_PATH_DATASET_PATH)
 
-    split_dataset(FULL_PATH_DATASET_PATH, RATE)
+    # split_dataset(FULL_PATH_DATASET_PATH, RATE)
