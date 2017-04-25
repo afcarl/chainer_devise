@@ -4,16 +4,15 @@
 
 ./train.py \
     --initial_model_path /home/ubuntu/data/models/chainer/bvlc_reference_caffenet/bvlc_reference_caffenet.pkl \
-    --root_dir_path      /home/ubuntu/data/devise/selected_images_256 \
-    --label_path         /home/ubuntu/data/devise/selected_images_256/label.txt \
-    --training_data_path /home/ubuntu/data/devise/selected_images_256/train_valid_.txt \
-    --testing_data_path  /home/ubuntu/data/devise/selected_images_256/test_.txt \
+    --root_dir_path      /home/ubuntu/data/devise/selected_images_256_greater_than_200_images \
+    --label_path         /home/ubuntu/data/devise/selected_images_256_greater_than_200_images/label.txt \
+    --training_data_path /home/ubuntu/data/devise/selected_images_256_greater_than_200_images/train_valid_.txt \
+    --testing_data_path  /home/ubuntu/data/devise/selected_images_256_greater_than_200_images/test_.txt \
     --gpu 0 \
-    --epoch 60 \
-    --batch_size 400 \
+    --epoch 100 \
+    --batch_size 250 \
     --test_batch_size 200 \
     --log_interval 50 \
     --model_epoch 20 \
     --out_dir_path       /home/ubuntu/results/devise \
-    --resume             /home/ubuntu/results/devise/20170416-23-06/snapshot_iter_5111 \
     --mean_image_path    /home/ubuntu/libs/caffe-master/python/caffe/imagenet/ilsvrc_2012_mean.npy
