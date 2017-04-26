@@ -10,7 +10,7 @@
     --testing_data_path  /home/ubuntu/data/devise/selected_images_256_greater_than_200_images/test_.txt \
     --gpu 0 \
     --epoch 100 \
-    --batch_size 250 \
+    --batch_size 260 \
     --test_batch_size 200 \
     --log_interval 50 \
     --model_epoch 20 \
