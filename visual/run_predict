@@ -1,0 +1,9 @@
+#!/bin/sh
+
+./predict.py \
+    --testing_data_path /home/ubuntu/data/devise/selected_images_256_greater_than_200_images/test_.txt \
+    --root_dir_path     /home/ubuntu/data/devise/selected_images_256_greater_than_200_images \
+    --model_path        /home/ubuntu/results/devise/20170427-07-21/model_iter_14430 \
+    --batch_size        17 \
+    --mean_image_path   /home/ubuntu/libs/caffe-master/python/caffe/imagenet/ilsvrc_2012_mean.npy \
+    --gpu 0
