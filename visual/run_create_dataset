@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ./create_dataset.py \
-        --src_dir /Volumes/TOSHIBA\ EXT/mac/image_net/selected_images_256 \
+        --src_dir /Volumes/TOSHIBA\ EXT/mac/image_net/selected_images_256_greater_than_200_images \
         --training 6 \
         --testing 3 \
         --validation 1 

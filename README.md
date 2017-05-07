@@ -38,7 +38,13 @@ train : test : valid = 6 : 3 : 1とした。
 
 # test.txtとtrain_valid.txtの作成
 total_list.txtにgrepを適用して、test.txtとtrain_valid.txtを作る。
-test_.txt, train_valid_.txtはtestやtainなどの文字列を取り除きたものである。
+test_.txt, train_valid_.txtはtestやtainなどの文字列を取り除いたものである。
+```
+cat total_list.txt | grep -e " train" -e " valid" > train_valid.txt
+cat total_list.txt | grep " test" > test.txt
+cut -d " " -f1,2 test.txt  > test_.txt
+cut -d " " -f1,2 train_valid.txt  > train_valid_.txt
+```
 
 # 画像のくり抜きと平均画像からの差分
 - 256x256の画像の中心部分を227x227のサイズにくり抜く。
@@ -64,8 +70,42 @@ chainer.dataset.DatasetMixinを使う。
 - cg.dot: このファイルからグラフ構造を視覚化できる。
 - model_iter_xxx: モデルのスナップショット
 - snapshot_iter_xxx: trainerのスナップショット。これを使って訓練を再開できる。
+
 注意点：訓練の再開に必要なものはsnapshot_iter_xxxだけである。
-        つまり、modelの構築は必要ない(たぶん)。
+つまり、modelの構築は必要ない(たぶん)。予測するときにmodelは必要である。
+
+# 学習結果-1
+学習結果は以下の場所に保存してある。<br>
+EC2では
+```
+/home/ubuntu/results/devise
+```
+localでは<br>
+```
+/Users/kumada/Documents/device
+```
+である。ディレクトリ名は、そこに納められた結果を導出する際に使用したコードのtag名と一致している。
+クローリングした全画像を使用した。学習曲線は以下のとおり。<br><br>
+20170414-09-19
+![正解率](./readme_images/20170414-09-19/accuracy.png)
+![誤差](./readme_images/20170414-09-19/loss.png)
+20170418-07-14
+![正解率](./readme_images/20170418-07-14/accuracy.png)
+![誤差](./readme_images/20170418-07-14/loss.png)
+いろいろ試行錯誤したが上記が限界である。テスト画像に対する正解率は0.6を辛うじて越す程度である。
+精度を上げるため、200枚以下のディレクトリを捨てることにする。現在selected_images_256に納められている画像は反転画像を含む。
+この各ディレクトリ内の画像枚数が200枚以下のものを捨てることにする。
+現在の画像枚数を以下のファイルに記入した(`check_images.py`を使用した)。
+```
+/Users/kumada/Data/image_net/selected_images_256_num_images
+```
+このファイルを見て捨てるべきクラスを判定する。`run_select_classes`を使用した。
+削除後のクラス数は130となる。出力先は
+```
+/Users/kumada/Data/image_net/selected_images_256_greater_than_200_images
+```
+である。
+
 
 # enwikiの加工
 ## ruby関係のインストール。

@@ -1,0 +1,9 @@
+#!/bin/sh
+
+./select_classes.py \
+        --num_file_path /Users/kumada/Data/image_net/selected_images_256_num_images \
+        --lower_num 200  \
+        --input_dir_path /Users/kumada/Data/image_net/selected_images_256 \
+        --output_dir_path /Users/kumada/Data/image_net/selected_images_256_greater_than_200_images
+
+ 
