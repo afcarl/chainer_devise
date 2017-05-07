@@ -1,4 +1,4 @@
-# chainer_devise
+# chainer\_devise
 implementation of DeViSE in Chainer
 
 # 画像の収集
@@ -28,17 +28,17 @@ util/myrunを使って、500クラス、各クラス1000枚として収集。必
 # 訓練・検証・テストデータの作成
 `create_dataset.py`を使って、画像名とラベルの対応付けを行う。
 `run_create_dataset`を使えば良い。
-各ディレクトリの中にdataset_list.txtが出力される。
+各ディレクトリの中にdataset\_list.txtが出力される。
 train : test : valid = 6 : 3 : 1とした。
 実際の訓練時には、train + valid : test = 7 : 3とする。
 
-# dataset_list.txtの作成
-`create_total_list.py`を使い`dataset_list.txt`を1つにまとめる。total_list.txtが出来上がる。
+# dataset\_list.txtの作成
+`create_total_list.py`を使い`dataset_list.txt`を1つにまとめる。total\_list.txtが出来上がる。
 `run_create_total_list`を使う。
 
-# test.txtとtrain_valid.txtの作成
-total_list.txtにgrepを適用して、test.txtとtrain_valid.txtを作る。
-test_.txt, train_valid_.txtはtestやtainなどの文字列を取り除いたものである。
+# test.txtとtrain\_valid.txtの作成
+total\_list.txtにgrepを適用して、test.txtとtrain\_valid.txtを作る。
+test\_.txt, train\_valid\_.txtはtestやtainなどの文字列を取り除いたものである。
 ```
 cat total_list.txt | grep -e " train" -e " valid" > train_valid.txt
 cat total_list.txt | grep " test" > test.txt
@@ -50,7 +50,7 @@ cut -d " " -f1,2 train_valid.txt  > train_valid_.txt
 - 256x256の画像の中心部分を227x227のサイズにくり抜く。
 - 差分画像もくり抜き、差分を取る。
 - 結果を保存する。
-以上の作業をdata_preprocessor.pyで行う。
+以上の作業をdata\_preprocessor.pyで行う。
 容量が大きくなり過ぎるので、保存するのは止めます。
 
 # Iteratorの実装
@@ -59,7 +59,7 @@ cut -d " " -f1,2 train_valid.txt  > train_valid_.txt
 - batch size分の画像とラベルを返す。
 
 chainer.dataset.DatasetMixinを使う。
-既存のdata_preprocessor.pyを書き換えた。
+既存のdata\_preprocessor.pyを書き換えた。
 
 # caffe modelの変換
 `visual/load_caffemodel.py`を使って、caffemodelをchainerのモデルに変換する。
@@ -68,10 +68,10 @@ chainer.dataset.DatasetMixinを使う。
 `run_train.py`を実行する。出力ディレクトリに以下のファイルが出力される。
 - log: 訓練履歴
 - cg.dot: このファイルからグラフ構造を視覚化できる。
-- model_iter_xxx: モデルのスナップショット
-- snapshot_iter_xxx: trainerのスナップショット。これを使って訓練を再開できる。
+- model\_iter\_xxx: モデルのスナップショット
+- snapshot\_iter\_xxx: trainerのスナップショット。これを使って訓練を再開できる。
 
-注意点：訓練の再開に必要なものはsnapshot_iter_xxxだけである。
+注意点：訓練の再開に必要なものはsnapshot\_iter\_xxxだけである。
 つまり、modelの構築は必要ない(たぶん)。予測するときにmodelは必要である。
 
 # 学習結果-1
@@ -93,7 +93,9 @@ localでは<br>
 ![正解率](./readme_images/20170418-07-14/accuracy.png)
 ![誤差](./readme_images/20170418-07-14/loss.png)
 いろいろ試行錯誤したが上記が限界である。テスト画像に対する正解率は0.6を辛うじて越す程度である。
-精度を上げるため、200枚以下のディレクトリを捨てることにする。現在selected_images_256に納められている画像は反転画像を含む。
+
+# 学習結果-2
+精度を上げるため、画像が200枚以下のディレクトリを捨てることにする。現在selected\_images\_256に納められている画像は反転画像を含む。
 この各ディレクトリ内の画像枚数が200枚以下のものを捨てることにする。
 現在の画像枚数を以下のファイルに記入した(`check_images.py`を使用した)。
 ```
@@ -104,8 +106,12 @@ localでは<br>
 ```
 /Users/kumada/Data/image_net/selected_images_256_greater_than_200_images
 ```
-である。
-
+である。学習結果は以下のとおり。<br><br>
+20170427-07-21
+![正解率](./readme_images/20170427-07-21/accuracy.png)
+![誤差](./readme_images/20170427-07-21/loss.png)
+ほんの少しだけ良くなったけが、もう少し上げたい。正解率の高いクラスだけを残すことにする。
+`run_predict`で各クラスの正解率を見る。
 
 # enwikiの加工
 ## ruby関係のインストール。
