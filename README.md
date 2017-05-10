@@ -111,7 +111,23 @@ localでは<br>
 ![正解率](./readme_images/20170427-07-21/accuracy.png)
 ![誤差](./readme_images/20170427-07-21/loss.png)
 ほんの少しだけ良くなったけが、もう少し上げたい。正解率の高いクラスだけを残すことにする。
-`run_predict`で各クラスの正解率を見る。
+
+# クラスの取捨選択
+- `run_predict`で各クラスの正解率を見る。
+- 結果をaccuracies\_for\_all\_classes.txtという名前で保存。
+```
+/Volumes/TOSHIBA EXT/mac/image_net/accuracies_for_all_classes.txt
+```
+
+- 残すべきクラスを抜き出す。
+- 抜き出したクラスだけでtest.txt/train.txtを作る。
+
+|lower accuracy|average accuracy|count|
+|:-----------|------------:|:------------:|
+|0.5|0.69405|99|
+|0.6|0.74951|73|
+|0.7|0.80108|47|
+
 
 # enwikiの加工
 ## ruby関係のインストール。
