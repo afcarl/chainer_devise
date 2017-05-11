@@ -5,6 +5,6 @@
         --lower_accuracy 0.5 \
         --input_dir_path /Users/kumada/Data/image_net/selected_images_256_greater_than_200_images \
         --mode select \
-        --output_dir_path /Users/kumada/Data/image_net/selected_images_256_by_accuracies
+        --output_path /Users/kumada/Data/image_net/selected_classes_by_accuracies.txt
 
  

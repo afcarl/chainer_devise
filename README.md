@@ -119,8 +119,12 @@ localでは<br>
 /Volumes/TOSHIBA EXT/mac/image_net/accuracies_for_all_classes.txt
 ```
 
-- 残すべきクラスを抜き出す。
-- 抜き出したクラスだけでtest.txt/train.txtを作る。
+- 残すべきクラスを抜き出す。結果をファイルに落とす。ファイルの保存場所はここ。
+```
+/Volumes/TOSHIBA\ EXT/mac/image_net/selected_classes_by_accuracies.txt
+```
+
+- 「dataset_list.txtの作成」を利用して、抜き出したクラスだけでtest.txt/train.txtを作る。
 
 |lower accuracy|average accuracy|count|
 |:-----------|------------:|:------------:|

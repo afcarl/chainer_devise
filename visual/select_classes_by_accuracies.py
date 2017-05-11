@@ -39,11 +39,11 @@ def calculate_average_accuracy(path, lower_accuracy):
     print(lower_accuracy, average_accuracy, total_count)
 
 
-def select_classes(accuracy_path, lower_accuracy, label_path, input_dir_path):
+def select_classes(accuracy_path, lower_accuracy, label_path, output_path):
     label_map = make_map(label_path)
-    for (label, accuracy) in accuracy_generator(accuracy_path, lower_accuracy):
-        sub_dir_path = os.path.join(input_dir_path, label_map[label])
-        print(sub_dir_path, accuracy)
+    with open(output_path, 'w') as fout:
+        for (label, accuracy) in accuracy_generator(accuracy_path, lower_accuracy):
+            fout.write('{}\n'.format(label_map[label]))
 
 
 if __name__ == '__main__':
@@ -52,7 +52,7 @@ if __name__ == '__main__':
         parser.add_argument("--accuracy_path", help="input: a path to a file in which accuracies are described")
         parser.add_argument("--lower_accuracy", type=float, help="input: lower accuracy")
         parser.add_argument("--input_dir_path",  help="input: a path to an input directory path")
-        parser.add_argument("--output_dir_path", help="output: a path to an output directory path")
+        parser.add_argument("--output_path", help="output: a path to a output file")
         parser.add_argument("--mode", help="input: 'check' or 'select'")
 
         args = parser.parse_args()
@@ -60,7 +60,7 @@ if __name__ == '__main__':
             calculate_average_accuracy(args.accuracy_path, args.lower_accuracy)
         elif args.mode == 'select':
             label_path = os.path.join(args.input_dir_path, 'label.txt')
-            select_classes(args.accuracy_path, args.lower_accuracy, label_path, args.input_dir_path)
+            select_classes(args.accuracy_path, args.lower_accuracy, label_path, args.output_path)
         else:
             raise IOError('invalid mode')
     except IOError, e:
