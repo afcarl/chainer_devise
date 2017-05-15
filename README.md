@@ -118,13 +118,7 @@ localでは<br>
 ```
 /Volumes/TOSHIBA EXT/mac/image_net/accuracies_for_all_classes.txt
 ```
-
-- 残すべきクラスを抜き出す。結果をファイルに落とす。ファイルの保存場所はここ。
-```
-/Volumes/TOSHIBA\ EXT/mac/image_net/selected_classes_by_accuracies.txt
-```
-
-- 「dataset_list.txtの作成」を利用して、抜き出したクラスだけでtest.txt/train.txtを作る。
+正解率の下限を設定してクラスを選択する。そのときの平均正解率は以下のとおり。
 
 |lower accuracy|average accuracy|count|
 |:-----------|------------:|:------------:|
@@ -132,6 +126,17 @@ localでは<br>
 |0.6|0.74951|73|
 |0.7|0.80108|47|
 
+- 残すべきクラスを抜き出す。結果をファイルに落とす。ファイルの保存場所はここ。lower accuracy=0.5とした。
+```
+/Volumes/TOSHIBA\ EXT/mac/image_net/selected_classes_by_accuracies.txt
+```
+
+- 「dataset\_list.txtの作成」を利用して、抜き出したクラスだけでtest.txt/train.txtを作る。
+`run_create_total_list_by_accuracy`を実行すれば良い。結果のファイルは
+```
+/Volumes/TOSHIBA EXT/mac/image_net/selected_images_256_greater_than_200_images/total_list_selected.txt
+```
+である。
 
 # enwikiの加工
 ## ruby関係のインストール。
