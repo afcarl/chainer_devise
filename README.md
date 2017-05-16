@@ -136,7 +136,13 @@ localでは<br>
 ```
 /Volumes/TOSHIBA EXT/mac/image_net/selected_images_256_greater_than_200_images/total_list_selected.txt
 ```
-である。
+である。このファイルを使ってtest\_selected\_.txt / train\_valid\_selected\_.txtを作る。
+```
+cat total_list_selected.txt | grep -e " train" -e " valid" > train_valid_selected.txt
+cat total_list_selected.txt | grep " test" > test_selected.txt
+cut -d " " -f1,2 test_selected.txt  > test_selected_.txt
+cut -d " " -f1,2 train_valid_selected.txt  > train_valid_selected_.txt
+```
 
 # enwikiの加工
 ## ruby関係のインストール。
