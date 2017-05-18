@@ -143,6 +143,14 @@ cat total_list_selected.txt | grep " test" > test_selected.txt
 cut -d " " -f1,2 test_selected.txt  > test_selected_.txt
 cut -d " " -f1,2 train_valid_selected.txt  > train_valid_selected_.txt
 ```
+- 最後にlabel\_selected.txtを作る。selected\_classes\_by\_accuracies.txtをベースにして作る。
+`make_label_selected.py`を実行する。
+
+# 学習結果-3
+20170517-07-20
+![正解率](./readme_images/20170517-07-20/accuracy.png)
+![誤差](./readme_images/20170517-07-20/loss.png)
+正解率は0.735となった。しかし、過学習気味。まあいいや。先に進む。
 
 # enwikiの加工
 ## ruby関係のインストール。
