@@ -1,0 +1,5 @@
+#!/bin/sh
+
+./make_label_selected.py \
+        --input_path '/Users/kumada/Data/image_net/selected_classes_by_accuracies.txt' \
+        --output_path '/Users/kumada/Data/image_net/label_selected.txt'
