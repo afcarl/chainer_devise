@@ -1,0 +1,7 @@
+#!/bin/sh
+
+./train_devise_in_second_stage.py \
+    --visual_model_path ... \
+    --transformation_path ... \
+    --word2vec_path ... \
+    --output_dir_path ...
