@@ -4,7 +4,7 @@
 import chainer
 import chainer.links as L
 import chainer.functions as F
-import numpy as np
+import chainer.cuda
 
 
 class DeviseInFirstStage(chainer.Chain):
@@ -33,11 +33,13 @@ class DeviseInFirstStage(chainer.Chain):
 
     # test ok
     def calculate_loss(self, u, tl, tk):
+        xp = chainer.cuda.get_array_module(u)
         c = self.calculate_batch_matmul(u, tl, tk)
         d = DeviseInFirstStage.MARGIN - c
-        e = F.maximum(chainer.Variable(np.zeros(d.shape, np.float32)), d)
+        e = F.maximum(chainer.Variable(xp.zeros(d.shape, xp.float32)), d)
         return F.sum(e, axis=1)
 
+    # test ok
     def __call__(self, v, tl, tk):
         '''
             bs: batch_size

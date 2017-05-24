@@ -1,6 +1,11 @@
 #!/bin/sh
 
 ./train_devise_in_first_stage.py \
-    --visual_feature_path ... \
-    --word2vec_path ... \
-    --output_dir_path ...
+    --training_path ./dummy_training_path \
+    --testing_path ./dummhy_testing_path \
+    --output_dir_path ./dummy_dir \
+    --batch_size 100 \
+    --epoch_size 30 \
+    --log_interval 5 \
+    --model_epoch 2 \
+    --gpu 0
