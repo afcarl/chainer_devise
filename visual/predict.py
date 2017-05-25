@@ -11,7 +11,7 @@ import numpy as np
 import cupy
 
 PathInfo = collections.namedtuple('PathInfo', ['path', 'label'])
-CLASS_SIZE = 130
+# CLASS_SIZE = 130
 
 
 if __name__ == '__main__':
@@ -23,6 +23,7 @@ if __name__ == '__main__':
         parser.add_argument("--mean_image_path", help="input: a path to a mean image")
         parser.add_argument("--gpu", type=int, default=-1, help="input: GPU ID(negative value indicates CPU")
         parser.add_argument('--batch_size', type=int, default=32, help='input: minibatch size')
+        parser.add_argument('--class_size', type=int, default=99, help='input: class size')
         args = parser.parse_args()
 
         in_size = ModifiedReferenceCaffeNet.IN_SIZE
@@ -31,7 +32,7 @@ if __name__ == '__main__':
         iterator = chainer.iterators.SerialIterator(test, batch_size=args.batch_size, repeat=False, shuffle=False)
 
         # load a model
-        model = ModifiedReferenceCaffeNet(CLASS_SIZE)
+        model = ModifiedReferenceCaffeNet(args.class_size)
         chainer.serializers.load_npz(args.model_path, model)
         model.select_phase('predict')
         if args.gpu >= 0:
