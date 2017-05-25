@@ -190,4 +190,25 @@ AttributeError: 'NoneType' object has no attribute 'text'
 そのあと、gensim.models.word2vec.LineSentenceのオブジェクトを作る。
 一回呼び出すと、一文を単語のリストにして返してくれる。
 
+# deviseの構築
+
+- extraxt embed.W(A) from word2vec.
+- normalize A to be unit vector.
+- extract an output(B) of fc7 from CNN.
+- apply a matrix(M) to B to have the shape of B be the same as that of A.
+- use a combination of dot-product similarity and hinge rank loss.
+- train M while holding A and B fixed.
+- fine-tune CNN.
+
+`run_train_devise_in_first_stage.py`を実行したあと`run_train_devise_in_second_stage.py`を実行する。
+
+## 入力ファイルのフォーマット
+train\_valid\_selected\_.txtと同じ。
+ただし、画像は特徴ベクトルに、ラベルは対応するword vectorに変換する。<br>
+例：
+palace/21\_1150541246\_85fdc255cb.jpg 61<br>
+palace/21\_1150541246\_85fdc255cb.jpgを特徴ベクトルに変換、61はpalaceに置き換え、これをword vectorに変換する。<br>
+
+これらの変換は既存のクラスDataPreprocessorを拡張したクラスDataPreprocessorForDevise内で行う。
+このクラス内で`feature_extractor.py`と`word2vec_converter.py`を使う。
 
