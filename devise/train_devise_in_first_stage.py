@@ -10,6 +10,8 @@ if __name__ == '__main__':
         parser = argparse.ArgumentParser()
 
         parser.add_argument('--gpu', default=0, type=int, help='INPUT: GPU ID (negative value indicates CPU)')
+        parser.add_argument('--root_dir_path',
+                            help='INPUT: a path to a training/testing directory')
         parser.add_argument('--training_path',
                             help='INPUT: a path to a file in which all paths needed for training are described')
         parser.add_argument('--testing_path',

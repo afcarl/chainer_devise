@@ -4,3 +4,4 @@ util/.idea/*
 test.png
 doc/cg.png
 visual/.idea/*
+*.pyc

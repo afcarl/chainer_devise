@@ -1,6 +1,7 @@
 #!/bin/sh
 
 ./train_devise_in_first_stage.py \
+    --root_dir_path ./dummy_root_dir_path \
     --training_path ./dummy_training_path \
     --testing_path ./dummhy_testing_path \
     --output_dir_path ./dummy_dir \
