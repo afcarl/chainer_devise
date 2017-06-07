@@ -211,4 +211,4 @@ palace/21\_1150541246\_85fdc255cb.jpgを特徴ベクトルに変換、61はpalac
 
 これらの変換は既存のクラスDataPreprocessorを拡張したクラスDataPreprocessorForDevise内で行う。
 このクラス内で`feature_extractor.py`と`word2vec_converter.py`を使う。
-
+extractorをどうするか？
