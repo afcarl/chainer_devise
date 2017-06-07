@@ -21,6 +21,7 @@ if __name__ == '__main__':
         parser.add_argument('--epoch_size', default=10, type=int, help='INPUT: number of epochs to train')
         parser.add_argument('--log_interval', type=int, help='input: test interval')
         parser.add_argument('--model_epoch', type=int, default=1, help='input: epoch to save model')
+        parser.add_argument('--model_path', help='input: a path to a trained model')
         args = parser.parse_args()
 
     except Exception, e:

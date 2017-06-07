@@ -4,6 +4,7 @@
 import sys
 sys.path.append('../visual')
 from image_cropper import *  # noqa
+from modified_reference_caffenet import *  # noqa
 from chainer import dataset  # noqa
 from chainer import datasets  # noqa
 import random  # noqa
@@ -12,7 +13,7 @@ import random  # noqa
 class DataPreprocessorForDevise(dataset.DatasetMixin):
 
     # test ok
-    def __init__(self, path, root, mean, crop_size, random=True, is_scaled=True):
+    def __init__(self, path, model_path, class_size, root, mean, crop_size, gpu, random=True, is_scaled=True):
         """
         @param path a path to a training/testing data file
         @param root a path to a training/teting directory
@@ -22,10 +23,21 @@ class DataPreprocessorForDevise(dataset.DatasetMixin):
         @param is_scaled True if a scaling is needed. This value must be the same as training procedure.
         """
         self.base = datasets.LabeledImageDataset(path, root)
+        self.gpu = gpu
+        self.model = self.load_model(model_path, class_size, gpu)
         self.mean = mean.astype('f')
         self.crop_size = crop_size
         self.random = random
         self.is_scaled = is_scaled
+
+    def load_model(self, model_path, class_size, gpu):
+        model = ModifiedReferenceCaffeNet(class_size)
+        chainer.serializers.load_npz(model_path, model)
+        model.select_phase('predict')
+        if gpu >= 0:
+            chainer.cuda.get_device(gpu).use()  # make the GPU current
+            model.to_gpu()
+        return model
 
     # test ok
     def __len__(self):
@@ -36,6 +48,8 @@ class DataPreprocessorForDevise(dataset.DatasetMixin):
         @param image an image instance
         @return feature vector
         """
+        x = image[np.newaxis]
+        self.model(x, None)
         return image
 
     def convert_to_word_vector(self, label):

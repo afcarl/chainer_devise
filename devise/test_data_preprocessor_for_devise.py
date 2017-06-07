@@ -13,13 +13,19 @@ class TestDataPreprocessorForDevise(unittest.TestCase):
         root_dir_path = '/home/ubuntu/data/devise/selected_images_256_greater_than_200_images'
         training_path = os.path.join(root_dir_path, 'train_valid_selected_.txt')
         mean_image_path = '/home/ubuntu/libs/caffe-master/python/caffe/imagenet/ilsvrc_2012_mean.npy'
+        model_path = '/home/ubuntu/results/devise/20170517-07-20/model_iter_11453'
+        class_size = 99
         crop_size = 227
         mean = np.load(mean_image_path)
+        gpu = 0
         preprocessor = DataPreprocessorForDevise(
             training_path,
+            model_path,
+            class_size,
             root_dir_path,
             mean,
             crop_size,
+            gpu,
             random=False,
             is_scaled=True
         )
