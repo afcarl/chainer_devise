@@ -5,15 +5,18 @@ import sys
 sys.path.append('../visual')
 from image_cropper import *  # noqa
 from modified_reference_caffenet import *  # noqa
+from modified_reference_caffenet_with_extractor import *  # noqa
 from chainer import dataset  # noqa
 from chainer import datasets  # noqa
 import random  # noqa
+from copy_model import *  # noqa
+# import numpy as np
 
 
 class DataPreprocessorForDevise(dataset.DatasetMixin):
 
     # test ok
-    def __init__(self, path, model_path, class_size, root, mean, crop_size, gpu, random=True, is_scaled=True):
+    def __init__(self, path, model_path, word2vec_model_path, class_size, root, mean, crop_size, gpu, random=True, is_scaled=True):
         """
         @param path a path to a training/testing data file
         @param root a path to a training/teting directory
@@ -25,39 +28,65 @@ class DataPreprocessorForDevise(dataset.DatasetMixin):
         self.base = datasets.LabeledImageDataset(path, root)
         self.gpu = gpu
         self.model = self.load_model(model_path, class_size, gpu)
+        self.word2index, self.index2word, self.word2vec_w = self.load_word2vec_model(word2vec_model_path)
         self.mean = mean.astype('f')
         self.crop_size = crop_size
         self.random = random
         self.is_scaled = is_scaled
 
+    # test ok
     def load_model(self, model_path, class_size, gpu):
-        model = ModifiedReferenceCaffeNet(class_size)
-        chainer.serializers.load_npz(model_path, model)
-        model.select_phase('predict')
+        original_model = ModifiedReferenceCaffeNet(class_size)
+        chainer.serializers.load_npz(model_path, original_model)
+        model = ModifiedReferenceCaffeNetWithExtractor(class_size)
+        copy_model(original_model, model)
+        model.select_phase('extractor')
         if gpu >= 0:
             chainer.cuda.get_device(gpu).use()  # make the GPU current
             model.to_gpu()
         return model
 
     # test ok
+    def load_word2vec_model(self, word2vec_model_path):
+        with open(word2vec_model_path, 'r') as f:
+            ss = f.readline().split()
+            n_vocab, n_units = int(ss[0]), int(ss[1])
+            word2index = {}
+            index2word = {}
+            w = np.empty((n_vocab, n_units), dtype=np.float32)
+            for i, line in enumerate(f):
+                ss = line.split()
+                assert len(ss) == n_units + 1
+                word = ss[0]
+                word2index[word] = i
+                index2word[i] = word
+                w[i] = np.array([float(s) for s in ss[1:]], dtype=np.float32)
+
+        s = np.sqrt((w * w).sum(1))
+        w /= s.reshape((s.shape[0], 1))  # normalize
+        return word2index, index2word, w
+
+    # test ok
     def __len__(self):
         return len(self.base)
 
+    # test ok
     def convert_to_feature(self, image):
         """
         @param image an image instance
         @return feature vector
         """
         x = image[np.newaxis]
-        self.model(x, None)
-        return image
+        return self.model(x, None)[0]
 
+    # test ok
     def convert_to_word_vector(self, label):
         """
         @param label a label
         @return word vector
         """
-        return label
+        index = self.word2index[label]
+        return self.word2vec_w[index]
 
     def get_example(self, i):
         """
