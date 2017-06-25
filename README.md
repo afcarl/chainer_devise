@@ -205,10 +205,11 @@ AttributeError: 'NoneType' object has no attribute 'text'
 ## 入力ファイルのフォーマット
 train\_valid\_selected\_.txtと同じ。
 ただし、画像は特徴ベクトルに、ラベルは対応するword vectorに変換する。<br>
-例：
+
+例：<br>
 palace/21\_1150541246\_85fdc255cb.jpg 61<br>
-palace/21\_1150541246\_85fdc255cb.jpgを特徴ベクトルに変換、61はpalaceに置き換え、これをword vectorに変換する。<br>
+
+palace/21\_1150541246\_85fdc255cb.jpgを特徴ベクトルに変換、61をword vectorに変換する。<br>
 
 これらの変換は既存のクラスDataPreprocessorを拡張したクラスDataPreprocessorForDevise内で行う。
 このクラス内で`feature_extractor.py`と`word2vec_converter.py`を使う。
-extractorをどうするか？
