@@ -16,7 +16,19 @@ from copy_model import *  # noqa
 class DataPreprocessorForDevise(dataset.DatasetMixin):
 
     # test ok
-    def __init__(self, path, model_path, word2vec_model_path, class_size, root, mean, crop_size, gpu, random=True, is_scaled=True):
+    def __init__(
+        self,
+        path,
+        model,
+        (word2index, index2word, word2vec_w),
+        class_size,
+        root,
+        mean,
+        crop_size,
+        gpu,
+        random=True,
+        is_scaled=True
+    ):
         """
         @param path a path to a training/testing data file
         @param root a path to a training/teting directory
@@ -27,15 +39,17 @@ class DataPreprocessorForDevise(dataset.DatasetMixin):
         """
         self.base = datasets.LabeledImageDataset(path, root)
         self.gpu = gpu
-        self.model = self.load_model(model_path, class_size, gpu)
-        self.word2index, self.index2word, self.word2vec_w = self.load_word2vec_model(word2vec_model_path)
+        self.model = model  # self.load_model(model_path, class_size, gpu)
+        # self.word2index, self.index2word, self.word2vec_w = self.load_word2vec_model(word2vec_model)
+        self.word2index, self.index2word, self.word2vec_w = (word2index, index2word, word2vec_w)
         self.mean = mean.astype('f')
         self.crop_size = crop_size
         self.random = random
         self.is_scaled = is_scaled
 
     # test ok
-    def load_model(self, model_path, class_size, gpu):
+    @staticmethod
+    def load_model(model_path, class_size, gpu):
         original_model = ModifiedReferenceCaffeNet(class_size)
         chainer.serializers.load_npz(model_path, original_model)
         model = ModifiedReferenceCaffeNetWithExtractor(class_size)
@@ -47,7 +61,8 @@ class DataPreprocessorForDevise(dataset.DatasetMixin):
         return model
 
     # test ok
-    def load_word2vec_model(self, word2vec_model_path):
+    @staticmethod
+    def load_word2vec_model(word2vec_model_path):
         with open(word2vec_model_path, 'r') as f:
             ss = f.readline().split()
             n_vocab, n_units = int(ss[0]), int(ss[1])
@@ -85,15 +100,18 @@ class DataPreprocessorForDevise(dataset.DatasetMixin):
         @param label a label
         @return word vector
         """
-        index = self.word2index[label]
+        # word  = self.label2word[label]
+        # index = self.word2index[word]
         return self.word2vec_w[index]
 
     def get_example(self, i):
         """
         This method reads the i-th pair of (image, label) and return a pair of (feature_vector, word_vector).
-        It applies following preprocesses to the former pair:
+        It applies the following preprocesses to the image:
           - Cropping (random or center rectangular)
           - Scaling to [0, 1] value
+        and the following preprocesses to the label:
+          - Nomalizing
         """
         crop_size = self.crop_size
 

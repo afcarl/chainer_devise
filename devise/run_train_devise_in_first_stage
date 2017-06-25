@@ -1,10 +1,18 @@
 #!/bin/sh
 
+ROOT_DIR_PATH=/home/ubuntu/data/devise/selected_images_256_greater_than_200_images
+RESULTS_DIR_PATH=/home/ubuntu/results
+
 ./train_devise_in_first_stage.py \
-    --root_dir_path ./dummy_root_dir_path \
-    --training_path ./dummy_training_path \
-    --testing_path ./dummhy_testing_path \
-    --output_dir_path ./dummy_dir \
+    --root_dir_path $ROOT_DIR_PATH \
+    --training_path $ROOT_DIR_PATH/train_valid_selected_.txt \
+    --testing_path  $ROOT_DIR_PATH/test_selected_.txt \
+    --label_path    $ROOT_DIR_PATH/label_selected.txt \
+    --mean_image_path /home/ubuntu/libs/caffe-master/python/caffe/imagenet/ilsvrc_2012_mean.npy \
+    --model_path          $RESULTS_DIR_PATH/devise/20170517-07-20/model_iter_11453 \
+    --word2vec_model_path $RESULTS_DIR_PATH/word2vec/word2vec.model \
+    --output_dir_path     $RESULTS_DIR_PATH/devise/first_stage \
+    --class_size 99 \
     --batch_size 100 \
     --epoch_size 30 \
     --log_interval 5 \
