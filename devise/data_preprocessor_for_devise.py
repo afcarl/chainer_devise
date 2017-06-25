@@ -95,13 +95,14 @@ class DataPreprocessorForDevise(dataset.DatasetMixin):
         return self.model(x, None)[0]
 
     # test ok
-    def convert_to_word_vector(self, label_index):
+    def convert_to_word_vector(self, label):
         """
         @param label a label
         @return word vector
         """
-        # index = self.word2index[label]
-        return self.word2vec_w[label_index]
+        # word  = self.label2word[label]
+        # index = self.word2index[word]
+        return self.word2vec_w[index]
 
     def get_example(self, i):
         """
