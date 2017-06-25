@@ -9,6 +9,7 @@ import chainer.cuda
 
 class DeviseInFirstStage(chainer.Chain):
     MARGIN = 0.1
+    IN_SIZE = 227
 
     def __init__(self, visual_feature_size, word2vec_size):
         super(DeviseInFirstStage, self).__init__(
