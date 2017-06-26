@@ -5,7 +5,7 @@
 import argparse
 import os
 from devise_in_first_stage import DeviseInFirstStage
-# from data_preprocessor_for_devise import DataPreprocessorForDevise
+from data_preprocessor_for_devise import DataPreprocessorForDevise
 import chainer
 import numpy as np
 
@@ -66,20 +66,33 @@ if __name__ == '__main__':
 
         print('# _/_/_/ load dataset _/_/_/')
 
+        visual_model = DataPreprocessorForDevise.load_model(args.model_path, args.class_size, args.gpu)
+        word2index, word2vec_w = DataPreprocessorForDevise.load_word2vec_model(args.word2vec_model_path)
+        label2word = DataPreprocessorForDevise.load_labels(args.label_path)
+
         in_size = DeviseInFirstStage.IN_SIZE
         mean = np.load(args.mean_image_path)
-        # train = DataPreprocessorForDevise(
-        #     args.training_path,
-        #     args.model_path,
-        #     args.word2vec_model_path,
-        #     args.class_size,
-        #     args.root_dir_path,
-        #     mean,
-        #     in_size,
-        #     args.gpu,
-        #     random=False,
-        #     is_scaled=True)
-        # test = DataPreprocessorForDevise(args.testing_path, args.root_dir_path, mean, in_size, random=False, is_scaled=True)
-
+        train = DataPreprocessorForDevise(
+            args.training_path,
+            visual_model,
+            (word2index, label2word, word2vec_w),
+            args.class_size,
+            args.root_dir_path,
+            mean,
+            in_size,
+            args.gpu,
+            random=False,
+            is_scaled=True)
+        test = DataPreprocessorForDevise(
+            args.testing_path,
+            visual_model,
+            (word2index, label2word, word2vec_w),
+            args.class_size,
+            args.root_dir_path,
+            mean,
+            in_size,
+            args.gpu,
+            random=False,
+            is_scaled=True)
     except Exception, e:
         print(e)

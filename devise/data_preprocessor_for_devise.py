@@ -20,7 +20,7 @@ class DataPreprocessorForDevise(dataset.DatasetMixin):
         self,
         path,
         model,
-        (word2index, index2word, word2vec_w),
+        (word2index, label2word, word2vec_w),
         class_size,
         root,
         mean,
@@ -39,9 +39,8 @@ class DataPreprocessorForDevise(dataset.DatasetMixin):
         """
         self.base = datasets.LabeledImageDataset(path, root)
         self.gpu = gpu
-        self.model = model  # self.load_model(model_path, class_size, gpu)
-        # self.word2index, self.index2word, self.word2vec_w = self.load_word2vec_model(word2vec_model)
-        self.word2index, self.index2word, self.word2vec_w = (word2index, index2word, word2vec_w)
+        self.model = model
+        self.word2index, self.label2word, self.word2vec_w = (word2index, label2word, word2vec_w)
         self.mean = mean.astype('f')
         self.crop_size = crop_size
         self.random = random
@@ -67,19 +66,31 @@ class DataPreprocessorForDevise(dataset.DatasetMixin):
             ss = f.readline().split()
             n_vocab, n_units = int(ss[0]), int(ss[1])
             word2index = {}
-            index2word = {}
             w = np.empty((n_vocab, n_units), dtype=np.float32)
             for i, line in enumerate(f):
                 ss = line.split()
                 assert len(ss) == n_units + 1
                 word = ss[0]
                 word2index[word] = i
-                index2word[i] = word
                 w[i] = np.array([float(s) for s in ss[1:]], dtype=np.float32)
 
         s = np.sqrt((w * w).sum(1))
         w /= s.reshape((s.shape[0], 1))  # normalize
-        return word2index, index2word, w
+        return word2index, w
+
+    # test ok
+    @staticmethod
+    def load_labels(label_path):
+        label2word = {}
+        for line in open(label_path):
+            line = line.strip()
+            if line == '':
+                continue
+            tokens = line.split()
+            if len(tokens) != 2:
+                continue
+            label2word[int(tokens[1])] = tokens[0]
+        return label2word
 
     # test ok
     def __len__(self):
@@ -100,8 +111,8 @@ class DataPreprocessorForDevise(dataset.DatasetMixin):
         @param label a label
         @return word vector
         """
-        # word  = self.label2word[label]
-        # index = self.word2index[word]
+        word = self.label2word[label]
+        index = self.word2index[word]
         return self.word2vec_w[index]
 
     def get_example(self, i):
