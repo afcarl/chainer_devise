@@ -59,7 +59,7 @@ class TestDataPreprocessorForDevise(unittest.TestCase):
         return np.random.randint(0, 256, (3, 227, 227)).astype('f')
 
     def test_load_model(self):
-        model = TestDataPreprocessorForDevise.preprocessor.model  # DataPreprocessorForDevise.load_model(model_path, class_size, gpu)
+        model = TestDataPreprocessorForDevise.preprocessor.model
 
         dummy_image = self.make_dummy_image()
         dummy_image = chainer.cuda.to_gpu(dummy_image)
@@ -83,7 +83,6 @@ class TestDataPreprocessorForDevise(unittest.TestCase):
 
     def test_convert_to_feature(self):
         dummy_image = self.make_dummy_image_2()
-        dummy_image = chainer.cuda.to_gpu(dummy_image)
         f = TestDataPreprocessorForDevise.preprocessor.convert_to_feature(dummy_image)
         self.assertTrue(f.shape == (1, 4096))
 
@@ -97,6 +96,12 @@ class TestDataPreprocessorForDevise(unittest.TestCase):
         path = '/home/ubuntu/data/devise/selected_images_256_greater_than_200_images/label_selected.txt'
         label2word = DataPreprocessorForDevise.load_labels(path)
         self.assertTrue(label2word[98] == 'wringer')
+
+    def test_get_example(self):
+        preprocessor = TestDataPreprocessorForDevise.preprocessor
+        feature, w2v = preprocessor.get_example(0)
+        self.assertTrue(feature.shape == (1, 4096))
+        self.assertTrue(w2v.shape == (200,))
 
 
 if __name__ == '__main__':

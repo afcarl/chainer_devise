@@ -14,6 +14,7 @@ RESULTS_DIR_PATH=/home/ubuntu/results
     --output_dir_path     $RESULTS_DIR_PATH/devise/first_stage \
     --class_size 99 \
     --batch_size 100 \
+    --test_batch_size 100 \
     --epoch_size 30 \
     --log_interval 5 \
     --model_epoch 2 \

@@ -102,6 +102,8 @@ class DataPreprocessorForDevise(dataset.DatasetMixin):
         @param image an image instance
         @return feature vector
         """
+        if self.gpu >= 0:
+            image = chainer.cuda.to_gpu(image)
         x = image[np.newaxis]
         return self.model(x, None)[0]
 
@@ -115,6 +117,7 @@ class DataPreprocessorForDevise(dataset.DatasetMixin):
         index = self.word2index[word]
         return self.word2vec_w[index]
 
+    # test ok
     def get_example(self, i):
         """
         This method reads the i-th pair of (image, label) and return a pair of (feature_vector, word_vector).
@@ -149,4 +152,4 @@ class DataPreprocessorForDevise(dataset.DatasetMixin):
         # If necessary, scale an image
         if self.is_scaled:
             image *= (1.0 / 255.0)
-        return self.convert_to_feature(image), self.convert_to_word_vector(label)
+        return self.convert_to_feature(image), self.convert_to_word_vector(label.item())

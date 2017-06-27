@@ -8,6 +8,8 @@ from devise_in_first_stage import DeviseInFirstStage
 from data_preprocessor_for_devise import DataPreprocessorForDevise
 import chainer
 import numpy as np
+from chainer import training
+from chainer.training import extensions
 
 VISUAL_FEATURE_SIZE = 4096
 WORD2VEC_SIZE = 200
@@ -21,6 +23,17 @@ def check_file_path(file_path):
 def check_dir_path(dir_path):
     if not os.path.isdir(dir_path):
         raise IOError('invalid dir path: {}'.format(dir_path))
+
+
+# ???
+class TestModeEvaluator(extensions.Evaluator):
+
+    def evaluate(self):
+        model = self.get_target('main')
+        model.select_phase('test')
+        ret = super(TestModeEvaluator, self).evaluate()
+        model.select_phase('train')
+        return ret
 
 
 if __name__ == '__main__':
@@ -40,12 +53,15 @@ if __name__ == '__main__':
                             help='INPUT: a path to a label file')
         parser.add_argument('--output_dir_path', help='OUTPUT: a path to an output directory')
         parser.add_argument('--batch_size', default=32, type=int, help='INPUT: minibatch size')
+        parser.add_argument('--test_batch_size', type=int, default=25, help='input: testing minibatch size')
         parser.add_argument('--epoch_size', default=10, type=int, help='INPUT: number of epochs to train')
         parser.add_argument('--log_interval', type=int, help='INPUT: test interval')
         parser.add_argument('--class_size', type=int, help='INPUT: test interval')
         parser.add_argument('--model_epoch', type=int, default=1, help='INPUT: epoch to save model')
         parser.add_argument('--model_path', help='INPUT: a path to a trained model')
         parser.add_argument('--word2vec_model_path', help='INPUT: a path to a trained word2vec model')
+        parser.add_argument('--loader_job', type=int, default=2,
+                            help='input: number of parallel data loading processes')
         args = parser.parse_args()
 
         # check paths
@@ -94,5 +110,49 @@ if __name__ == '__main__':
             args.gpu,
             random=False,
             is_scaled=True)
+
+        train_iter = chainer.iterators.MultiprocessIterator(train, args.batch_size, n_processes=args.loader_job)
+        test_iter = chainer.iterators.MultiprocessIterator(test, args.test_batch_size, repeat=False,
+                                                           n_processes=args.loader_job)
+
+        print("# _/_/_/ set up an optimizer _/_/_/")
+
+        optimizer = chainer.optimizers.MomentumSGD(lr=0.01, momentum=0.9)
+        # optimizer = chainer.optimizers.Adam()
+        optimizer.setup(model)
+
+        print("# _/_/_/ set up a trainer _/_/_/")
+
+        updater = training.StandardUpdater(train_iter, optimizer, device=args.gpu)
+        trainer = training.Trainer(updater, (args.epoch, 'epoch'), args.out_dir_path)
+
+        log_interval = (args.log_interval, 'iteration')
+        model_epoch = (args.model_epoch, 'epoch')
+
+        trainer.extend(TestModeEvaluator(test_iter, model, device=args.gpu), trigger=log_interval)
+        trainer.extend(extensions.ExponentialShift('lr', 0.97), trigger=(1, 'epoch'))
+
+        trainer.extend(extensions.dump_graph('main/loss'))  # yield cg.dot
+        trainer.extend(extensions.snapshot(), trigger=model_epoch)  # save a trainer for resuming training
+        trainer.extend(extensions.snapshot_object(model, 'model_iter_{.updater.iteration}'),
+                       trigger=model_epoch)  # save a modified model
+
+        # Be careful to pass the interval directly to LogReport
+        # (it determines when to emit log rather than when to read observations)
+        trainer.extend(extensions.LogReport(trigger=log_interval))  # yield 'log'
+        trainer.extend(extensions.observe_lr(), trigger=log_interval)
+
+        # Save two plot images to the result dir
+        trainer.extend(
+            extensions.PlotReport(
+                ['main/loss', 'validation/main/loss'], 'iteration', trigger=log_interval, file_name='loss.png'))
+        trainer.extend(
+            extensions.PlotReport(
+                ['main/accuracy', 'validation/main/accuracy'], 'iteration', trigger=log_interval, file_name='accuracy.png'))
+
+        if args.resume:
+            chainer.serializers.load_npz(args.resume, trainer)
+
+        trainer.run()
     except Exception, e:
         print(e)
