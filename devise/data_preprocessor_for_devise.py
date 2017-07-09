@@ -105,7 +105,7 @@ class DataPreprocessorForDevise(dataset.DatasetMixin):
         if self.gpu >= 0:
             image = chainer.cuda.to_gpu(image)
         x = image[np.newaxis]
-        return self.model(x, None)[0]
+        return self.model(x, None)[0].data
 
     # test ok
     def convert_to_word_vector(self, label):

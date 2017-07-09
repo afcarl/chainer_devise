@@ -41,20 +41,25 @@ class DeviseInFirstStage(chainer.Chain):
         return F.sum(e, axis=1)
 
     # test ok
-    def __call__(self, v, tl, tk):
-        '''
-            bs: batch_size
-            vs: visual_feature_size
-            ws: word2vec_size
-            ss: sample_size
-            v.shape: (bs, vs)
-            tl.shape: (bs, ws)
-            tk.shape: (bs, ws, ss)
-        '''
-        u = self.fc(v)  # (bs, ws)
-        loss = self.calculate_loss(u, tl, tk)
-        chainer.report({'loss': loss}, self)
-        return loss
+    # def __call__(self, v, tl, tk):
+    #     '''
+    #         bs: batch_size
+    #         vs: visual_feature_size
+    #         ws: word2vec_size
+    #         ss: sample_size
+    #         v.shape: (bs, vs)
+    #         tl.shape: (bs, ws)
+    #         tk.shape: (bs, ws, ss)
+    #     '''
+    #     u = self.fc(v)  # (bs, ws)
+    #     loss = self.calculate_loss(u, tl, tk)
+    #     chainer.report({'loss': loss}, self)
+    #     return loss
+
+    def __call__(self, v, tl):
+        print('type(v):{}, v.shape:{}'.format(type(v), v.shape))
+        print('type(tl):{}, tl.shape:{}'.format(type(tl), tl.shape))
+        return 0.1
 
 
 if __name__ == '__main__':

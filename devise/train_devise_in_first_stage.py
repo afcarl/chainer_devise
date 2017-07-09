@@ -25,14 +25,13 @@ def check_dir_path(dir_path):
         raise IOError('invalid dir path: {}'.format(dir_path))
 
 
-# ???
 class TestModeEvaluator(extensions.Evaluator):
 
     def evaluate(self):
-        model = self.get_target('main')
-        model.select_phase('test')
+        # model = self.get_target('main')
+        # model.select_phase('test')
         ret = super(TestModeEvaluator, self).evaluate()
-        model.select_phase('train')
+        # model.select_phase('train')
         return ret
 
 
@@ -51,10 +50,10 @@ if __name__ == '__main__':
                             help='INPUT: a path to a mean image file')
         parser.add_argument('--label_path',
                             help='INPUT: a path to a label file')
-        parser.add_argument('--output_dir_path', help='OUTPUT: a path to an output directory')
+        parser.add_argument('--out_dir_path', help='OUTPUT: a path to an output directory')
         parser.add_argument('--batch_size', default=32, type=int, help='INPUT: minibatch size')
         parser.add_argument('--test_batch_size', type=int, default=25, help='input: testing minibatch size')
-        parser.add_argument('--epoch_size', default=10, type=int, help='INPUT: number of epochs to train')
+        parser.add_argument('--epoch', default=10, type=int, help='INPUT: number of epochs to train')
         parser.add_argument('--log_interval', type=int, help='INPUT: test interval')
         parser.add_argument('--class_size', type=int, help='INPUT: test interval')
         parser.add_argument('--model_epoch', type=int, default=1, help='INPUT: epoch to save model')
@@ -111,9 +110,8 @@ if __name__ == '__main__':
             random=False,
             is_scaled=True)
 
-        train_iter = chainer.iterators.MultiprocessIterator(train, args.batch_size, n_processes=args.loader_job)
-        test_iter = chainer.iterators.MultiprocessIterator(test, args.test_batch_size, repeat=False,
-                                                           n_processes=args.loader_job)
+        train_iter = chainer.iterators.SerialIterator(train, args.batch_size)
+        test_iter = chainer.iterators.SerialIterator(test, args.test_batch_size, repeat=False)
 
         print("# _/_/_/ set up an optimizer _/_/_/")
 
@@ -146,13 +144,13 @@ if __name__ == '__main__':
         trainer.extend(
             extensions.PlotReport(
                 ['main/loss', 'validation/main/loss'], 'iteration', trigger=log_interval, file_name='loss.png'))
-        trainer.extend(
-            extensions.PlotReport(
-                ['main/accuracy', 'validation/main/accuracy'], 'iteration', trigger=log_interval, file_name='accuracy.png'))
+        # trainer.extend(
+        #     extensions.PlotReport(
+        #         ['main/accuracy', 'validation/main/accuracy'], 'iteration', trigger=log_interval, file_name='accuracy.png'))
 
-        if args.resume:
-            chainer.serializers.load_npz(args.resume, trainer)
-
+        # if args.resume:
+        #    chainer.serializers.load_npz(args.resume, trainer)
+        print("# _/_/_/ run _/_/_/")
         trainer.run()
     except Exception, e:
         print(e)

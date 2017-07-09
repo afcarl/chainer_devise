@@ -11,11 +11,11 @@ RESULTS_DIR_PATH=/home/ubuntu/results
     --mean_image_path /home/ubuntu/libs/caffe-master/python/caffe/imagenet/ilsvrc_2012_mean.npy \
     --model_path          $RESULTS_DIR_PATH/devise/20170517-07-20/model_iter_11453 \
     --word2vec_model_path $RESULTS_DIR_PATH/word2vec/word2vec.model \
-    --output_dir_path     $RESULTS_DIR_PATH/devise/first_stage \
+    --out_dir_path        $RESULTS_DIR_PATH/devise/first_stage \
     --class_size 99 \
     --batch_size 100 \
     --test_batch_size 100 \
-    --epoch_size 30 \
+    --epoch 30 \
     --log_interval 5 \
     --model_epoch 2 \
     --gpu 0
