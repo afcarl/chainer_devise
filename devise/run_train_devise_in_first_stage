@@ -13,7 +13,7 @@ RESULTS_DIR_PATH=/home/ubuntu/results
     --word2vec_model_path $RESULTS_DIR_PATH/word2vec/word2vec.model \
     --out_dir_path        $RESULTS_DIR_PATH/devise/first_stage \
     --class_size 99 \
-    --batch_size 100 \
+    --batch_size 10 \
     --test_batch_size 100 \
     --epoch 30 \
     --log_interval 5 \

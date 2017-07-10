@@ -57,6 +57,8 @@ class DeviseInFirstStage(chainer.Chain):
     #     return loss
 
     def __call__(self, v, tl):
+        bs, _, vs = v.shape
+        v = F.reshape(v, (bs, vs))
         print('type(v):{}, v.shape:{}'.format(type(v), v.shape))
         print('type(tl):{}, tl.shape:{}'.format(type(tl), tl.shape))
         return 0.1

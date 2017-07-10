@@ -152,4 +152,8 @@ class DataPreprocessorForDevise(dataset.DatasetMixin):
         # If necessary, scale an image
         if self.is_scaled:
             image *= (1.0 / 255.0)
+        # print('type(label):{}'.format(type(label)))
+        # print('type(label.item()):{}'.format(type(label.item())))
+        # print('label.item():{}'.format(label.item()))
+
         return self.convert_to_feature(image), self.convert_to_word_vector(label.item())
