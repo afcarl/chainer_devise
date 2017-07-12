@@ -3,6 +3,8 @@
 
 import sys
 sys.path.append('../visual')
+sys.path.append('../../chainer_word2vec/word2vec')
+from word_searcher import WordSearcher  # noqa
 from image_cropper import *  # noqa
 from modified_reference_caffenet import *  # noqa
 from modified_reference_caffenet_with_extractor import *  # noqa
@@ -26,6 +28,7 @@ class DataPreprocessorForDevise(dataset.DatasetMixin):
         mean,
         crop_size,
         gpu,
+        n_similarities=5,
         random=True,
         is_scaled=True
     ):
@@ -34,17 +37,23 @@ class DataPreprocessorForDevise(dataset.DatasetMixin):
         @param root a path to a training/teting directory
         @param mean a np.array instance of an average image
         @param crop_size
+        @param n_similars the number of similar words
         @param random True if random selection is needed.
         @param is_scaled True if a scaling is needed. This value must be the same as training procedure.
         """
         self.base = datasets.LabeledImageDataset(path, root)
-        self.gpu = gpu
         self.model = model
         self.word2index, self.label2word, self.word2vec_w = (word2index, label2word, word2vec_w)
         self.mean = mean.astype('f')
         self.crop_size = crop_size
+        self.gpu = gpu
+        self.n_similarities = n_similarities
         self.random = random
         self.is_scaled = is_scaled
+
+        self.word_searcher = WordSearcher(n_similarities)
+        self.word_searcher.w = word2vec_w
+        self.word_searcher.word2index = word2index
 
     # test ok
     @staticmethod

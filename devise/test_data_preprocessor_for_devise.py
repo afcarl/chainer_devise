@@ -118,7 +118,15 @@ class TestDataPreprocessorForDevise(unittest.TestCase):
             self.assertTrue(r[0].shape == (1, 4096))
             self.assertTrue(r[1].shape == (200,))
 
-        # ダミーモデルを作って引数として何が入るのかを見極める.
+    def test_word_searcher(self):
+        preprocessor = TestDataPreprocessorForDevise.preprocessor
+        word_searcher = preprocessor.word_searcher
+        similar_indices = list(word_searcher.similarity_generator('tokyo'))
+        answers = [(396750, 0.88120759), (619085, 0.82389867), (502362, 0.81960642), (98620, 0.794792), (515730, 0.78090179)]
+        # print(similar_indices)
+        for (similar_index, answer) in zip(similar_indices, answers):
+            self.assertTrue(similar_index[0] == answer[0])
+            self.assertAlmostEqual(similar_index[1], answer[1], delta=1.0e-5)
 
 
 if __name__ == '__main__':
