@@ -13,6 +13,7 @@ from modified_reference_caffenet import *  # noqa
 
 class TestDataPreprocessorForDevise(unittest.TestCase):
     preprocessor = None
+    index2word = None
 
     @classmethod
     def setUpClass(cls):
@@ -29,7 +30,7 @@ class TestDataPreprocessorForDevise(unittest.TestCase):
         gpu = 0
 
         model = DataPreprocessorForDevise.load_model(model_path, class_size, gpu)
-        word2index, word2vec_w = DataPreprocessorForDevise.load_word2vec_model(word2vec_model_path)
+        word2index, index2word, word2vec_w = DataPreprocessorForDevise.load_word2vec_model(word2vec_model_path)
         label2word = DataPreprocessorForDevise.load_labels(label_path)
 
         cls.preprocessor = DataPreprocessorForDevise(
@@ -44,6 +45,7 @@ class TestDataPreprocessorForDevise(unittest.TestCase):
             random=False,
             is_scaled=True
         )
+        cls.index2word = index2word
 
     def test_init(self):
         self.assertTrue(TestDataPreprocessorForDevise.preprocessor is not None)
@@ -127,6 +129,21 @@ class TestDataPreprocessorForDevise(unittest.TestCase):
         for (similar_index, answer) in zip(similar_indices, answers):
             self.assertTrue(similar_index[0] == answer[0])
             self.assertAlmostEqual(similar_index[1], answer[1], delta=1.0e-5)
+
+    def test_find_similar_words(self):
+        preprocessor = TestDataPreprocessorForDevise.preprocessor
+        # word = 'aircraft'
+        label = 1  # a label used in visual model
+        similar_indices = preprocessor.find_similar_indices(label)
+        similar_words = [TestDataPreprocessorForDevise.index2word[index] for index in similar_indices]
+        answers = ['airframe', 'airliner', 'rotorcraft', 'airframes', 'airliners']
+        self.assertTrue(answers == similar_words)
+
+    def test_convert_to_word_vectors(self):
+        preprocessor = TestDataPreprocessorForDevise.preprocessor
+        label = 1
+        vecs = preprocessor.convert_to_word_vectors(label)
+        self.assertTrue(vecs.shape == (200, 6))
 
 
 if __name__ == '__main__':

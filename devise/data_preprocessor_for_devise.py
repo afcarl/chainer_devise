@@ -1,18 +1,18 @@
 #!/usr/bin/env python
 # coding:utf-8
 
+from chainer import dataset
+from chainer import datasets
 import sys
+import random
+from itertools import chain
 sys.path.append('../visual')
 sys.path.append('../../chainer_word2vec/word2vec')
 from word_searcher import WordSearcher  # noqa
 from image_cropper import *  # noqa
 from modified_reference_caffenet import *  # noqa
 from modified_reference_caffenet_with_extractor import *  # noqa
-from chainer import dataset  # noqa
-from chainer import datasets  # noqa
-import random  # noqa
 from copy_model import *  # noqa
-# import numpy as np
 
 
 class DataPreprocessorForDevise(dataset.DatasetMixin):
@@ -75,17 +75,19 @@ class DataPreprocessorForDevise(dataset.DatasetMixin):
             ss = f.readline().split()
             n_vocab, n_units = int(ss[0]), int(ss[1])
             word2index = {}
+            index2word = {}
             w = np.empty((n_vocab, n_units), dtype=np.float32)
             for i, line in enumerate(f):
                 ss = line.split()
                 assert len(ss) == n_units + 1
                 word = ss[0]
                 word2index[word] = i
+                index2word[i] = word
                 w[i] = np.array([float(s) for s in ss[1:]], dtype=np.float32)
 
         s = np.sqrt((w * w).sum(1))
         w /= s.reshape((s.shape[0], 1))  # normalize
-        return word2index, w
+        return word2index, index2word, w
 
     # test ok
     @staticmethod
@@ -122,8 +124,8 @@ class DataPreprocessorForDevise(dataset.DatasetMixin):
         @param label a label
         @return word vector
         """
-        word = self.label2word[label]
-        index = self.word2index[word]
+        word = self.label2word[label]  # from a label used in visual model to a corresponding word
+        index = self.word2index[word]  # from a word to a index used in word2vec model
         return self.word2vec_w[index]
 
     # test ok
@@ -166,3 +168,23 @@ class DataPreprocessorForDevise(dataset.DatasetMixin):
         # print('label.item():{}'.format(label.item()))
 
         return self.convert_to_feature(image), self.convert_to_word_vector(label.item())
+
+    # test ok
+    def find_similar_indices(self, label):
+        word = self.label2word[label]
+        return [i for (i, _) in self.word_searcher.similarity_generator(word)]
+
+    # test ok
+    def convert_to_word_vectors(self, label):
+        """
+        @param label a label
+        @return word vectors
+        """
+        word = self.label2word[label]  # from a label used in visual model to a corresponding word
+        index = self.word2index[word]  # from a word to a index used in word2vec model
+        vec = self.word2vec_w[index]
+
+        similar_indices = self.find_similar_indices(label)
+        similar_vecs = [self.word2vec_w[similar_index] for similar_index in similar_indices]
+
+        return np.vstack(list(chain.from_iterable([[vec], similar_vecs]))).transpose()
