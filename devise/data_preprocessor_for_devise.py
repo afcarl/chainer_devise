@@ -167,7 +167,7 @@ class DataPreprocessorForDevise(dataset.DatasetMixin):
         # print('type(label.item()):{}'.format(type(label.item())))
         # print('label.item():{}'.format(label.item()))
 
-        return self.convert_to_feature(image), self.convert_to_word_vector(label.item())
+        return self.convert_to_feature(image), self.convert_to_word_vectors(label.item())
 
     # test ok
     def find_similar_indices(self, label):

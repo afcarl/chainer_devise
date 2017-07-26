@@ -81,7 +81,7 @@ class TestDataPreprocessorForDevise(unittest.TestCase):
 
     def test_load_word2vec_model(self):
         word2vec_model_path = '/home/ubuntu/results/word2vec/word2vec.model'
-        (word2index,  word2vec_w) = DataPreprocessorForDevise.load_word2vec_model(word2vec_model_path)
+        (word2index,  _, word2vec_w) = DataPreprocessorForDevise.load_word2vec_model(word2vec_model_path)
         self.assertTrue(word2index['wringer'] == 223093)
 
     def test_convert_to_feature(self):
@@ -104,7 +104,7 @@ class TestDataPreprocessorForDevise(unittest.TestCase):
         preprocessor = TestDataPreprocessorForDevise.preprocessor
         feature, w2v = preprocessor.get_example(0)
         self.assertTrue(feature.shape == (1, 4096))
-        self.assertTrue(w2v.shape == (200,))
+        self.assertTrue(w2v.shape == (200, 1 + preprocessor.n_similarities))
 
     def test_iter(self):
         preprocessor = TestDataPreprocessorForDevise.preprocessor
@@ -118,7 +118,7 @@ class TestDataPreprocessorForDevise(unittest.TestCase):
             self.assertTrue(type(r[0]) == chainer.cuda.ndarray)
             self.assertTrue(type(r[1]) == np.ndarray)
             self.assertTrue(r[0].shape == (1, 4096))
-            self.assertTrue(r[1].shape == (200,))
+            self.assertTrue(r[1].shape == (200, 1 + preprocessor.n_similarities))
 
     def test_word_searcher(self):
         preprocessor = TestDataPreprocessorForDevise.preprocessor
@@ -143,7 +143,7 @@ class TestDataPreprocessorForDevise(unittest.TestCase):
         preprocessor = TestDataPreprocessorForDevise.preprocessor
         label = 1
         vecs = preprocessor.convert_to_word_vectors(label)
-        self.assertTrue(vecs.shape == (200, 6))
+        self.assertTrue(vecs.shape == (200, 1 + preprocessor.n_similarities))
 
 
 if __name__ == '__main__':
