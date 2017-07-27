@@ -11,188 +11,68 @@ import chainer.functions as F
 class TestDeviseInFirstStage(unittest.TestCase):
 
     def test_broadcast(self):
-        row = 3
-        col = 2
-        a = np.arange(row * col)
-        a = a.reshape(row, col)
+        bs = 3
+        ws = 2
+        a = np.arange(bs * ws)
+        a = a.reshape(bs, ws, 1)
 
         v = chainer.Variable(a)
-        u = F.broadcast_to(v[:, None, :], (row, 4, col))
-        self.assertTrue(np.all(u.data[:, 0, :] == a))
-        self.assertTrue(np.all(u.data[:, 1, :] == a))
-        self.assertTrue(np.all(u.data[:, 2, :] == a))
-        self.assertTrue(np.all(u.data[:, 3, :] == a))
+        ss = 4
+        u = F.broadcast_to(v, (bs, ws, ss))
+        for i in range(ss):
+            self.assertTrue(np.all(u.data[:, :, i] == a[:, :, 0]))
 
     def test_batch_matmul(self):
         bs = 2
-        n = 3
-        m = 4
-
-        a = np.arange(bs * n, dtype=np.float32)
-        a = a.reshape(bs, n)
-
-        b = np.arange(bs * m * n, dtype=np.float32)
-        b = b.reshape(bs, m, n)
-
-        '''
-        b[0] = 0  1  2
-               3  4  5
-               6  7  8
-               9 10 11
-
-        a[0] = 0
-               1
-               2
-
-        b[0] a[0] =  5
-                    14
-                    23
-                    32
-
-        b[1] = 12 13 14
-               15 16 17
-               18 19 20
-               21 22 23
-
-        a[1] = 3
-               4
-               5
-
-        b[1] a[1] = 158
-                    194
-                    230
-                    266
-        '''
-
-        a = chainer.Variable(a)
-        b = chainer.Variable(b)
-        c = F.batch_matmul(b, a)
-        self.assertTrue((bs, m, 1) == c.data.shape)
-        c = F.reshape(c, (bs, m))
-        self.assertTrue(np.all([5, 14, 23, 32] == c.data[0]))
-        self.assertTrue(np.all([158, 194, 230, 266] == c.data[1]))
+        ws = 3
+        ss = 4
+        tm = np.arange(bs * ws * ss, dtype=np.float32)
+        tm = chainer.Variable(tm.reshape(bs, ws, ss))  # bs (ws,ss)
+        u = np.arange(bs * ws, dtype=np.float32)
+        u = chainer.Variable(u.reshape(bs, ws))  # bs (ws,1)
+        y = F.batch_matmul(tm, u, transa=True)  # bs (ss,ws) * (ws,1) -> bs (ss,1)
+        self.assertTrue(y.data.shape == (bs, ss, 1))
 
     def test_calculate_batch_matmul(self):
-        bs = 2
-        ss = 3
-        ws = 4
-
-        u = np.arange(bs * ws, dtype=np.float32)
-        u = u.reshape(bs, ws)
-        '''
-            0 1 2 3
-            4 5 6 7
-        '''
-
-        vu = chainer.Variable(u)
+        bs = 1
+        ws = 3
+        ss = 2
 
         tl = np.arange(bs * ws, dtype=np.float32)
-        tl = tl.reshape(bs, ws)
-        '''
-            0 1 2 3
-            4 5 6 7
-        '''
+        tl = chainer.Variable(tl.reshape(bs, ws, 1))
+        # print('tl', tl.data)
 
-        vtl = chainer.Variable(tl)
-        '''
-        hoge = F.broadcast_to(tl[:, None, :], (bs, ss, ws))
-            0 1 2 3
-            0 1 2 3
-            0 1 2 3
+        tk = np.arange(bs * ws * ss, dtype=np.float32)
+        tk = chainer.Variable(tk.reshape(bs, ws, ss))
+        # print('tk', tk.data)
 
-            4 5 6 7
-            4 5 6 7
-            4 5 6 7
-        '''
-        tk = np.arange(bs * ss * ws, dtype=np.float32)
-        tk = tk.reshape(bs, ss, ws)
-        '''
-            0 1  2  3
-            4 5  6  7
-            8 9 10 11
+        u = np.arange(bs * ws, dtype=np.float32)
+        u = chainer.Variable(u.reshape(bs, ws))
+        # print('u', u.data)
 
-            12 13 14 15
-            16 17 18 19
-            20 21 22 23
-        '''
-
-        '''
-        tm = hoge - tk
-             0  0  0  0
-            -4 -4 -4 -4
-            -8 -8 -8 -8
-
-             -8  -8  -8  -8
-            -12 -12 -12 -12
-            -16 -16 -16 -16
-        '''
-        vtk = chainer.Variable(tk)
-
-        devise = DeviseInFirstStage(1, 1)
-        c = devise.calculate_batch_matmul(vu, vtl, vtk)
-        self.assertTrue((bs, ss) == c.data.shape)
-        self.assertTrue(np.all(c.data == [[0, -24, -48], [-176, -264, -352]]))
+        y = DeviseInFirstStage.calculate_batch_matmul(u, tl, tk)
+        self.assertTrue(y.data.shape == (bs, ss, 1))
+        self.assertTrue(np.all(y.data == np.array([[[-5], [-8]]])))
 
     def test_calculate_loss(self):
-        bs = 2
-        ss = 3
-        ws = 4
-
-        u = np.arange(bs * ws, dtype=np.float32)
-        u = u.reshape(bs, ws)
-        '''
-            0 1 2 3
-            4 5 6 7
-        '''
-
-        vu = chainer.Variable(u)
+        bs = 1
+        ws = 3
+        ss = 2
 
         tl = np.arange(bs * ws, dtype=np.float32)
-        tl = tl.reshape(bs, ws)
-        '''
-            0 1 2 3
-            4 5 6 7
-        '''
+        tl = chainer.Variable(tl.reshape(bs, ws, 1))
+        # print('tl', tl.data)
 
-        vtl = chainer.Variable(tl)
-        '''
-        hoge = F.broadcast_to(tl[:, None, :], (bs, ss, ws))
-            0 1 2 3
-            0 1 2 3
-            0 1 2 3
+        tk = np.arange(bs * ws * ss, dtype=np.float32)
+        tk = chainer.Variable(tk.reshape(bs, ws, ss))
+        # print('tk', tk.data)
 
-            4 5 6 7
-            4 5 6 7
-            4 5 6 7
-        '''
-        tk = np.arange(bs * ss * ws, dtype=np.float32)
-        tk = tk.reshape(bs, ss, ws)
-        '''
-            0 1  2  3
-            4 5  6  7
-            8 9 10 11
+        u = np.arange(bs * ws, dtype=np.float32)
+        u = chainer.Variable(u.reshape(bs, ws))
+        # print('u', u.data)
 
-            12 13 14 15
-            16 17 18 19
-            20 21 22 23
-        '''
-
-        '''
-        tm = hoge - tk
-             0  0  0  0
-            -4 -4 -4 -4
-            -8 -8 -8 -8
-
-             -8  -8  -8  -8
-            -12 -12 -12 -12
-            -16 -16 -16 -16
-        '''
-        vtk = chainer.Variable(tk)
-
-        devise = DeviseInFirstStage(1, 1)
-        c = devise.calculate_loss(vu, vtl, vtk)
-        self.assertAlmostEqual(c.data[0], 72.30000305, delta=1.0e-05)
-        self.assertAlmostEqual(c.data[1], 792.30004883, delta=1.0e-05)
+        y = DeviseInFirstStage.calculate_loss(u, tl, tk)
+        self.assertAlmostEqual(y.data[0, 0], 13.20000076, delta=1.0e-05)
 
     def test_linear(self):
         bs = 2
@@ -207,52 +87,53 @@ class TestDeviseInFirstStage(unittest.TestCase):
         devise = DeviseInFirstStage(vs, ws)
         r = devise.fc(vv)
         self.assertTrue(r.data.shape == (bs, ws))
+        print(r.data)
 
-    def test_call(self):
-        bs = 2
-        ss = 3
-        ws = 4
-        vs = 5
+    # def test_call(self):
+    #     bs = 2
+    #     ss = 3
+    #     ws = 4
+    #     vs = 5
 
-        # visual vector
-        v = np.array([[0, 1, 2, 3, 4], [4, 5, 6, 7, 8]], dtype=np.float32)
-        v = v.reshape(bs, 1, vs)
-        vv = chainer.Variable(v)
-        '''
-            0 1 2 3 4
-            5 6 7 8 9
-        '''
+    #     # visual vector
+    #     v = np.array([[0, 1, 2, 3, 4], [4, 5, 6, 7, 8]], dtype=np.float32)
+    #     v = v.reshape(bs, 1, vs)
+    #     vv = chainer.Variable(v)
+    #     '''
+    #         0 1 2 3 4
+    #         5 6 7 8 9
+    #     '''
 
-        # correct label
-        tl = np.arange(bs * ws, dtype=np.float32)
-        tl = tl.reshape(bs, ws, 1)
-        # vtl = chainer.Variable(tl)
-        '''
-            0 1 2 3
-            4 5 6 7
-        '''
+    #     # correct label
+    #     tl = np.arange(bs * ws, dtype=np.float32)
+    #     tl = tl.reshape(bs, ws, 1)
+    #     # vtl = chainer.Variable(tl)
+    #     '''
+    #         0 1 2 3
+    #         4 5 6 7
+    #     '''
 
-        # negative label
-        tk = np.arange(bs * ss * ws, dtype=np.float32)
-        tk = tk.reshape(bs, ws, ss)
-        # vtk = chainer.Variable(tk)
-        '''
-            0 1  2  3
-            4 5  6  7
-            8 9 10 11
+    #     # negative label
+    #     tk = np.arange(bs * ss * ws, dtype=np.float32)
+    #     tk = tk.reshape(bs, ws, ss)
+    #     # vtk = chainer.Variable(tk)
+    #     '''
+    #         0 1  2  3
+    #         4 5  6  7
+    #         8 9 10 11
 
-            12 13 14 15
-            16 17 18 19
-            20 21 22 23
-        '''
-        t = np.concatenate((tl, tk), axis=2)
-        vt = chainer.Variable(t)
-        self.assertTrue(t.shape == (bs, ws, 1 + ss))
-        devise = DeviseInFirstStage(vs, ws)
-        devise.fc.W.data = np.eye(ws, vs)
-        c = devise(vv, vt)
-        # self.assertAlmostEqual(c.data[0], 72.30000305, delta=1.0e-05)
-        # self.assertAlmostEqual(c.data[1], 792.30004883, delta=1.0e-05)
+    #         12 13 14 15
+    #         16 17 18 19
+    #         20 21 22 23
+    #     '''
+    #     t = np.concatenate((tl, tk), axis=2)
+    #     vt = chainer.Variable(t)
+    #     self.assertTrue(t.shape == (bs, ws, 1 + ss))
+    #     devise = DeviseInFirstStage(vs, ws)
+    #     devise.fc.W.data = np.eye(ws, vs)
+    #     c = devise(vv, vt)
+    #     # self.assertAlmostEqual(c.data[0], 72.30000305, delta=1.0e-05)
+    #     # self.assertAlmostEqual(c.data[1], 792.30004883, delta=1.0e-05)
 
 
 if __name__ == '__main__':
