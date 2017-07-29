@@ -82,11 +82,12 @@ if __name__ == '__main__':
         print('# _/_/_/ load dataset _/_/_/')
 
         visual_model = DataPreprocessorForDevise.load_model(args.model_path, args.class_size, args.gpu)
-        word2index, word2vec_w = DataPreprocessorForDevise.load_word2vec_model(args.word2vec_model_path)
+        word2index, _, word2vec_w = DataPreprocessorForDevise.load_word2vec_model(args.word2vec_model_path)
         label2word = DataPreprocessorForDevise.load_labels(args.label_path)
 
-        in_size = DeviseInFirstStage.IN_SIZE
         mean = np.load(args.mean_image_path)
+
+        print('# _/_/_/ setup a data preprocessor for training _/_/_/')
         train = DataPreprocessorForDevise(
             args.training_path,
             visual_model,
@@ -94,10 +95,11 @@ if __name__ == '__main__':
             args.class_size,
             args.root_dir_path,
             mean,
-            in_size,
             args.gpu,
             random=False,
             is_scaled=True)
+
+        print('# _/_/_/ setup a data preprocessor for testing _/_/_/')
         test = DataPreprocessorForDevise(
             args.testing_path,
             visual_model,
@@ -105,7 +107,6 @@ if __name__ == '__main__':
             args.class_size,
             args.root_dir_path,
             mean,
-            in_size,
             args.gpu,
             random=False,
             is_scaled=True)
@@ -123,7 +124,6 @@ if __name__ == '__main__':
 
         updater = training.StandardUpdater(train_iter, optimizer, device=args.gpu)
         trainer = training.Trainer(updater, (args.epoch, 'epoch'), args.out_dir_path)
-
         log_interval = (args.log_interval, 'iteration')
         model_epoch = (args.model_epoch, 'epoch')
 

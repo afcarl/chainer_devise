@@ -17,6 +17,8 @@ from copy_model import *  # noqa
 
 class DataPreprocessorForDevise(dataset.DatasetMixin):
 
+    IN_SIZE = 227
+
     # test ok
     def __init__(
         self,
@@ -26,7 +28,6 @@ class DataPreprocessorForDevise(dataset.DatasetMixin):
         class_size,
         root,
         mean,
-        crop_size,
         gpu,
         n_similarities=5,
         random=True,
@@ -45,7 +46,7 @@ class DataPreprocessorForDevise(dataset.DatasetMixin):
         self.model = model
         self.word2index, self.label2word, self.word2vec_w = (word2index, label2word, word2vec_w)
         self.mean = mean.astype('f')
-        self.crop_size = crop_size
+        self.crop_size = DataPreprocessorForDevise.IN_SIZE
         self.gpu = gpu
         self.n_similarities = n_similarities
         self.random = random

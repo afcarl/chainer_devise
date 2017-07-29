@@ -45,6 +45,7 @@ class DeviseInFirstStage(chainer.Chain):
         e = F.maximum(chainer.Variable(xp.zeros(d.shape, xp.float32)), d)  # (bs, ss, 1)
         return F.sum(e, axis=1)  # (bs, 1)
 
+    # test ok
     def __call__(self, v, t):
         '''
             bs: batch_size
@@ -52,18 +53,16 @@ class DeviseInFirstStage(chainer.Chain):
             ws: word2vec_size
             ss: sample_size
             v.shape: (bs, vs)
-            tl.shape: (bs, ws, 1 + ss)
+            t.shape: (bs, ws, 1 + ss)
         '''
 
         bs, _, vs = v.shape
         v = F.reshape(v, (bs, vs))
         tl, tk = F.split_axis(t, [1], axis=2)
-        print('type(v):{}, v.shape:{}'.format(type(v), v.shape))
-        print('type(tl):{}, tl.shape:{}'.format(type(tl), tl.shape))
-        print('type(tk):{}, tk.shape:{}'.format(type(tk), tk.shape))
         u = self.fc(v)  # (bs, ws)
         loss = DeviseInFirstStage.calculate_loss(u, tl, tk)  # (bs, 1)
         chainer.report({'loss': loss}, self)
+        print(loss.data)
         return loss
 
 

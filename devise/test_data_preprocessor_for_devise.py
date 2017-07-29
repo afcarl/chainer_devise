@@ -25,7 +25,6 @@ class TestDataPreprocessorForDevise(unittest.TestCase):
         label_path = '/home/ubuntu/data/devise/selected_images_256_greater_than_200_images/label_selected.txt'
 
         class_size = 99
-        crop_size = 227
         mean = np.load(mean_image_path)
         gpu = 0
 
@@ -40,7 +39,6 @@ class TestDataPreprocessorForDevise(unittest.TestCase):
             class_size,
             root_dir_path,
             mean,
-            crop_size,
             gpu,
             random=False,
             is_scaled=True
